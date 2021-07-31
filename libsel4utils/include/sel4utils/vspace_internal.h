@@ -53,7 +53,7 @@ static inline void *create_bottom_level(vspace_t *vspace, uintptr_t init)
     return level;
 }
 
-static inline sel4utils_alloc_data_t *get_alloc_data(vspace_t *vspace)
+    static inline sel4utils_alloc_data_t *get_alloc_data(vspace_t *vspace)
 {
     return (sel4utils_alloc_data_t *) vspace->data;
 }
@@ -371,6 +371,7 @@ static inline bool is_reserved(vspace_mid_level_t *top_level, uintptr_t vaddr, s
 static inline seL4_CPtr get_cap(vspace_mid_level_t *top, uintptr_t vaddr)
 {
     vspace_mid_level_t *level = top;
+    // This only goes for i=3 and 2.
     for (int i = VSPACE_NUM_LEVELS - 1; i > 1; i--) {
         int index = INDEX_FOR_LEVEL(vaddr, i);
         uintptr_t next = level->table[index];
@@ -447,6 +448,7 @@ reservation_t sel4utils_reserve_deferred_rights_range_at(vspace_t *vspace, void 
 void sel4utils_free_reservation(vspace_t *vspace, reservation_t reservation);
 void sel4utils_free_reservation_by_vaddr(vspace_t *vspace, void *vaddr);
 void sel4utils_tear_down(vspace_t *vspace, vka_t *vka);
+void sel4utils_walk_vspacce(vspace_t *vspace, vka_t *vka);
 int sel4utils_share_mem_at_vaddr(vspace_t *from, vspace_t *to, void *start, int num_pages,
                                  size_t size_bits, void *vaddr, reservation_t reservation);
 

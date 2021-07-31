@@ -53,6 +53,12 @@ typedef struct vspace_bottom_level {
 typedef int(*sel4utils_map_page_fn)(vspace_t *vspace, seL4_CPtr cap, void *vaddr, seL4_CapRights_t rights,
                                     int cacheable, size_t size_bits);
 
+
+// This looks like a linked list of the actual regions in the address space.
+// Regions <-> reservations.
+// How do I know if a region is backed or not?
+// One  sel4utils_res points to another.
+// How do I connect this to the actual pages?
 struct sel4utils_res {
     uintptr_t start;
     uintptr_t end;
@@ -62,18 +68,18 @@ struct sel4utils_res {
     bool rights_deferred;
     struct sel4utils_res *next;
 };
-
 typedef struct sel4utils_res sel4utils_res_t;
 
+// This is the data in vspace_t
 typedef struct sel4utils_alloc_data {
-    seL4_CPtr vspace_root;
+    seL4_CPtr vspace_root; // probably a PD.
     vka_t *vka;
-    vspace_mid_level_t *top_level;
+    vspace_mid_level_t *top_level; // just an array to bottom levels
     uintptr_t next_bootstrap_vaddr;
     uintptr_t last_allocated;
     vspace_t *bootstrap;
     sel4utils_map_page_fn map_page;
-    sel4utils_res_t *reservation_head;
+    sel4utils_res_t *reservation_head; // start of LinkedList.
     bool is_empty;
 } sel4utils_alloc_data_t;
 

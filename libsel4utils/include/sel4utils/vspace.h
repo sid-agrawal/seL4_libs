@@ -353,3 +353,6 @@ void sel4utils_get_image_region(uintptr_t *va_start, uintptr_t *va_end);
  */
 uintptr_t sel4utils_get_paddr(vspace_t *vspace, void *vaddr, seL4_Word type, seL4_Word size_bits);
 
+
+// Sid'd new def.
+void sel4utils_walk_vspace(vspace_t *vspace, vka_t *vka);

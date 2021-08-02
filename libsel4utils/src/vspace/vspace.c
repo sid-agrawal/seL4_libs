@@ -825,11 +825,15 @@ void sel4utils_walk_vspace(vspace_t *vspace, vka_t *vka) {
     if (vka == VSPACE_FREE) {
         vka = data->vka;
     }
-
+    
+    int index = 0;
     /* free all the reservations */
     while (data->reservation_head != NULL) {
         reservation_t res = { .res = data->reservation_head };
         // Print something.
+        sel4utils_res_t *sel4_res = res.res;
+        ZF_LOGE("[%d] %p %p\n", index, sel4_res->start, sel4_res->end);
+        index++;
         //sel4utils_free_reservation(vspace, res);
     }
 

@@ -817,11 +817,6 @@ void sel4utils_tear_down(vspace_t *vspace, vka_t *vka)
 void sel4utils_walk_vspace(vspace_t *vspace, vka_t *vka) {
     sel4utils_alloc_data_t *data = get_alloc_data(vspace);
 
-    if (data->bootstrap == NULL) {
-        ZF_LOGE("Not implemented: sel4utils cannot currently walk a self-bootstrapped vspace\n");
-        return;
-    }
-
     if (vka == VSPACE_FREE) {
         vka = data->vka;
     }
@@ -834,7 +829,7 @@ void sel4utils_walk_vspace(vspace_t *vspace, vka_t *vka) {
         sel4utils_res_t *sel4_res = res.res;
         ZF_LOGE("[%d] %p %p\n", index, sel4_res->start, sel4_res->end);
         index++;
-        //sel4utils_free_reservation(vspace, res);
+      //sel4utils_free_reservation(vspace, res);
     }
 
     /* walk each level and find any pages / large pages */

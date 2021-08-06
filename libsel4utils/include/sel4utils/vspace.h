@@ -43,6 +43,8 @@ typedef struct vspace_mid_level {
      * sub table, there is the option of pointing directly to a page. This allows more
      * efficient memory usage for book keeping large pages */
     uintptr_t table[VSPACE_LEVEL_SIZE];
+    // These can point to either more mid-levels or 
+    // bottom level depending on values of VSPACE_NUM_LEVELS
 } vspace_mid_level_t;
 
 typedef struct vspace_bottom_level {

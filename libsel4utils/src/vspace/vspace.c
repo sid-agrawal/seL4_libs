@@ -751,6 +751,8 @@ static void free_pages_at_level(vspace_t *vspace, vka_t *vka, int table_level, u
         case EMPTY:
             return;
         }
+        // siagraw: As we see here we cast these to mid-level pointers
+        // only when there is more than 2 levels.
         level = (vspace_mid_level_t *)level->table[index];
     }
     if (table_level == 0) {

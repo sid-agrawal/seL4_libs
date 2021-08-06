@@ -15,6 +15,7 @@
 #define VSPACE_MAP_PAGING_OBJECTS 2
 #endif
 
+// siagraw: Let's stick to this.
 #define VSPACE_LEVEL_BITS 10
 #define VSPACE_NUM_LEVELS 2
 

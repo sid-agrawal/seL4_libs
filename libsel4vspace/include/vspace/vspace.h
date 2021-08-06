@@ -117,6 +117,7 @@ reservation_t vspace_reserve_range(vspace_t *vspace, size_t bytes,
  *
  * @return address of shared region in to, NULL on failure.
  */
+// Do this over all the memory and we have a cloned AS
 void *vspace_share_mem(vspace_t *from, vspace_t *to, void *start, int num_pages,
                        size_t size_bits, seL4_CapRights_t rights, int cacheable);
 

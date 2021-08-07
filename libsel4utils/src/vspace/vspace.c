@@ -458,17 +458,24 @@ void sel4utils_unmap_pages(vspace_t *vspace, void *vaddr, size_t num_pages, size
             }
         }
 
+        // siagraw: we seem to be freeing some memory used in the bookkeeping of the pages
+        // we just unmapped. TODO(siagraw) get a better sense of what all we are freeing.
         if (vka) {
             cspacepath_t path;
-            vka_cspace_make_path(vka, cap, &path);
-            vka_cnode_delete(&path);
-            vka_cspace_free(vka, cap);
-            if (sel4utils_get_cookie(vspace, vaddr)) {
+            vka_cspace_make_path(vka, cap, &path); // Construct a path to the cap.
+            vka_cnode_delete(&path); // Delete the cap.
+            vka_cspace_free(vka, cap); // Free the space taken by the cap??
+            //siagraw: cookis is the meta-data(??) in the lowest level Shadown-page-table.
+            // TODO(siagraw) : double check what we store in the cookies.
+            if (sel4utils_get_cookie(vspace, vaddr)) { 
                 vka_utspace_free(vka, kobject_get_type(KOBJECT_FRAME, size_bits),
                                  size_bits, sel4utils_get_cookie(vspace, vaddr));
             }
         }
 
+        // siagraw: the entries below refer to SPT.
+        // If no reservation was found, so ahead and clear those entries.
+        // else mark them are served in the SPT(??).
         if (reserve == NULL) {
             clear_entries(vspace, v, size_bits);
         } else {
@@ -747,6 +754,7 @@ static void free_pages_at_level(vspace_t *vspace, vka_t *vka, int table_level, u
     for (int i = VSPACE_NUM_LEVELS - 1; i > table_level && i > 1; i--) {
         int index = INDEX_FOR_LEVEL(vaddr, i);
         switch (level->table[index]) {
+            // siagraw: in case of reserved as well as empty, there is nothing to free.
         case RESERVED:
         case EMPTY:
             return;
@@ -807,10 +815,13 @@ void sel4utils_tear_down(vspace_t *vspace, vka_t *vka)
     }
 
     /* walk each level and find any pages / large pages */
+    // siagraw: in ia32 PD is l1, PT is l0
     if (data->top_level) {
         for (int i = 0; i < BIT(VSPACE_LEVEL_BITS); i++) {
             free_pages_at_level(vspace, vka, VSPACE_NUM_LEVELS - 1, BYTES_FOR_LEVEL(VSPACE_NUM_LEVELS - 1) * i);
         }
+        // siagraw: Umap the pages backing the top_level table. I thought these would more like vka free?
+        // for ia32 we would unmap 2 pages i.e. 8 * 1024 / 4096. Each pointer is 8 bytes.
         vspace_unmap_pages(data->bootstrap, data->top_level, sizeof(vspace_mid_level_t) / PAGE_SIZE_4K, PAGE_BITS_4K,
                            VSPACE_FREE);
     }

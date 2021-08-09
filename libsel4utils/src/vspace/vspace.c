@@ -827,33 +827,25 @@ void sel4utils_tear_down(vspace_t *vspace, vka_t *vka)
     }
 }
 
-void sel4utils_walk_vspace(vspace_t *vspace, vka_t *vka) {
+int sel4utils_walk_vspace(vspace_t *vspace, vka_t *vka) {
     sel4utils_alloc_data_t *data = get_alloc_data(vspace);
 
-    if (vka == VSPACE_FREE) {
-        vka = data->vka;
-    }
-    
+   
     int index = 0;
-    /* free all the reservations */
-    while (data->reservation_head != NULL) {
-        reservation_t res = { .res = data->reservation_head };
-        // Print something.
-        sel4utils_res_t *sel4_res = res.res;
-        ZF_LOGE("[%d] %p %p\n", index, sel4_res->start, sel4_res->end);
-        index++;
-      //sel4utils_free_reservation(vspace, res);
-    }
+    sel4utils_res_t *sel4_res = data->reservation_head;
 
-    /* walk each level and find any pages / large pages */
-    if (data->top_level) {
-        for (int i = 0; i < BIT(VSPACE_LEVEL_BITS); i++) {
-            free_pages_at_level(vspace, vka, VSPACE_NUM_LEVELS - 1, BYTES_FOR_LEVEL(VSPACE_NUM_LEVELS - 1) * i);
-        }
+    /* free all the reservations */
+    while (sel4_res != NULL) {
         // Print something.
-        vspace_unmap_pages(data->bootstrap, data->top_level, sizeof(vspace_mid_level_t) / PAGE_SIZE_4K, PAGE_BITS_4K,
-                           VSPACE_FREE);
+        long int sz = (sel4_res->end - sel4_res->start )/1024;
+        printf("\t[%d] %p %p %luk %u\n", index, sel4_res->start, sel4_res->end, 
+        sz, sel4_res->malloced);
+       // if (sel4_res->malloced) {
+            index++;
+       // }
+        sel4_res = sel4_res->next;
     }
+     return index;
 }
 
 int sel4utils_share_mem_at_vaddr(vspace_t *from, vspace_t *to, void *start, int num_pages,

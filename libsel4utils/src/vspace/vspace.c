@@ -837,14 +837,61 @@ int sel4utils_walk_vspace(vspace_t *vspace, vka_t *vka) {
     /* free all the reservations */
     while (sel4_res != NULL) {
         // Print something.
-        long int sz = (sel4_res->end - sel4_res->start )/1024;
-        printf("\t[%d] %p %p %luk %u\n", index, sel4_res->start, sel4_res->end, 
+        long int sz = (sel4_res->end - sel4_res->start ) / (4 * 1024);
+        printf("\t[%d] %p %p %lu pages %u\n", index, sel4_res->start, sel4_res->end, 
         sz, sel4_res->malloced);
        // if (sel4_res->malloced) {
             index++;
        // }
         sel4_res = sel4_res->next;
     }
+
+    printf("VSPACE_NUM_LEVELS %d\n", VSPACE_NUM_LEVELS);
+
+    int num_empty = 0;
+    int num_reserved =0;
+    int num_used =0;
+    
+
+    if (data->top_level) {
+        for (int i = 0; i < BIT(VSPACE_LEVEL_BITS); i++)
+        {
+            if (data->top_level->table[i] == RESERVED)
+            {
+                num_reserved++;
+            }
+            else if (data->top_level->table[i] == EMPTY)
+            {
+                num_empty++;
+            }
+            else
+            {
+                num_used++;
+
+                int L2_num_empty = 0;
+                int L2_num_reserved = 0;
+                int L2_num_used = 0;
+                for (int i = 0; i < BIT(VSPACE_LEVEL_BITS); i++)
+                {
+                    if (((vspace_bottom_level_t *) data->top_level->table[i])->cap == RESERVED)
+                    {
+                        L2_num_reserved++;
+                    }
+                    else if (((vspace_bottom_level_t *) data->top_level->table[i])->cap == EMPTY)
+                    {
+                        L2_num_empty++;
+                    }
+                    else
+                    {
+                        L2_num_used++;
+                    }
+                }
+                printf("L2\t L2(%p) E: %d R: %d U: %d\n", data->top_level->table[i], L2_num_reserved, L2_num_used);
+            }
+        }
+        printf("\t E: %d R: %d U: %d\n", num_empty, num_reserved, num_used);
+    }
+    
      return index;
 }
 

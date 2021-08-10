@@ -907,14 +907,14 @@ int sel4utils_walk_vspace(vspace_t *vspace, vka_t *vka) {
     int index = 0;
     sel4utils_res_t *sel4_res = data->reservation_head;
 
-    /* free all the reservations */
+    /* walk all the reservations */
     while (sel4_res != NULL) {
         // Print something.
         long int sz = (sel4_res->end - sel4_res->start ) / (4 * 1024);
-        printf("\t[%d] %p %p %lu pages %u\n", index, sel4_res->start, sz, sel4_res->malloced);
-        if (sel4_res->malloced) {
+        printf("\t[%d] %p->%p %lu pages malloced(%u)\n", index, sel4_res->start, sel4_res->end, sz, sel4_res->malloced);
+       // if (sel4_res->malloced) {
             index++;
-        }
+       // }
         sel4_res = sel4_res->next;
     }
 

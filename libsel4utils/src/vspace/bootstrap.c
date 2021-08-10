@@ -327,6 +327,7 @@ int sel4utils_get_empty_vspace_with_map(vspace_t *loader, vspace_t *new_vspace, 
     return get_vspace_bootstrap(loader, new_vspace, data, map_page);
 }
 
+//siagraw: the cookis is the process_t pointer.
 int sel4utils_get_vspace(vspace_t *loader, vspace_t *new_vspace, sel4utils_alloc_data_t *data,
                          vka_t *vka, seL4_CPtr vspace_root,
                          vspace_allocated_object_fn allocated_object_fn, void *allocated_object_cookie)
@@ -423,6 +424,7 @@ int sel4utils_bootstrap_clone_into_vspace(vspace_t *current, vspace_t *clone, re
     cspacepath_t dest;
     vka_cspace_make_path(get_alloc_data(current)->vka, slot, &dest);
 
+    // siagraw: This is the loop we want to steal.
     for (uintptr_t page = res->start; page < res->end - 1; page += PAGE_SIZE_4K) {
         /* we don't know if the current vspace has caps to its mappings -
          * it probably doesn't.

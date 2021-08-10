@@ -827,73 +827,6 @@ void sel4utils_tear_down(vspace_t *vspace, vka_t *vka)
     }
 }
 
-int sel4utils_walk_vspace(vspace_t *vspace, vka_t *vka) {
-    sel4utils_alloc_data_t *data = get_alloc_data(vspace);
-
-   
-    int index = 0;
-    sel4utils_res_t *sel4_res = data->reservation_head;
-
-    /* free all the reservations */
-    while (sel4_res != NULL) {
-        // Print something.
-        long int sz = (sel4_res->end - sel4_res->start ) / (4 * 1024);
-        printf("\t[%d] %p %p %lu pages %u\n", index, sel4_res->start, sel4_res->end, 
-        sz, sel4_res->malloced);
-       // if (sel4_res->malloced) {
-            index++;
-       // }
-        sel4_res = sel4_res->next;
-    }
-
-    printf("VSPACE_NUM_LEVELS %d\n", VSPACE_NUM_LEVELS);
-
-    int num_empty = 0;
-    int num_reserved =0;
-    int num_used =0;
-    
-
-    if (data->top_level) {
-        for (int i = 0; i < BIT(VSPACE_LEVEL_BITS); i++)
-        {
-            if (data->top_level->table[i] == RESERVED)
-            {
-                num_reserved++;
-            }
-            else if (data->top_level->table[i] == EMPTY)
-            {
-                num_empty++;
-            }
-            else
-            {
-                num_used++;
-
-                int L2_num_empty = 0;
-                int L2_num_reserved = 0;
-                int L2_num_used = 0;
-                for (int i = 0; i < BIT(VSPACE_LEVEL_BITS); i++)
-                {
-                    if (((vspace_bottom_level_t *) data->top_level->table[i])->cap == RESERVED)
-                    {
-                        L2_num_reserved++;
-                    }
-                    else if (((vspace_bottom_level_t *) data->top_level->table[i])->cap == EMPTY)
-                    {
-                        L2_num_empty++;
-                    }
-                    else
-                    {
-                        L2_num_used++;
-                    }
-                }
-                printf("L2\t L2(%p) E: %d R: %d U: %d\n", data->top_level->table[i], L2_num_reserved, L2_num_used);
-            }
-        }
-        printf("\t E: %d R: %d U: %d\n", num_empty, num_reserved, num_used);
-    }
-    
-     return index;
-}
 
 int sel4utils_share_mem_at_vaddr(vspace_t *from, vspace_t *to, void *start, int num_pages,
                                  size_t size_bits, void *vaddr, reservation_t reservation)
@@ -967,11 +900,82 @@ uintptr_t sel4utils_get_paddr(vspace_t *vspace, void *vaddr, seL4_Word type, seL
 
 }
 
-int sel4utils_share_mem_at_vaddr(vspace_t *from, vspace_t *to)
+int sel4utils_walk_vspace(vspace_t *vspace, vka_t *vka) {
+    sel4utils_alloc_data_t *data = get_alloc_data(vspace);
+
+   
+    int index = 0;
+    sel4utils_res_t *sel4_res = data->reservation_head;
+
+    /* free all the reservations */
+    while (sel4_res != NULL) {
+        // Print something.
+        long int sz = (sel4_res->end - sel4_res->start ) / (4 * 1024);
+        printf("\t[%d] %p->%p has %lu pages malloced(%u)\n", 
+            index, sel4_res->start, sel4_res->end, sz, sel4_res->malloced);
+        
+        if (sel4_res->malloced) {
+            index++;
+        }
+        sel4_res = sel4_res->next;
+    }
+
+    printf("VSPACE_NUM_LEVELS %d\n", VSPACE_NUM_LEVELS);
+
+    int num_empty = 0;
+    int num_reserved =0;
+    int num_used =0;
+    int i = 0;
+
+    if (data->top_level) {
+        for ( i = 0; i < BIT(VSPACE_LEVEL_BITS); i++)
+        {
+            if (data->top_level->table[i] == RESERVED)
+            {
+                num_reserved++;
+            }
+            else if (data->top_level->table[i] == EMPTY)
+            {
+                num_empty++;
+            }
+            else
+            {
+                num_used++;
+                vspace_bottom_level_t *bottom_table = (vspace_bottom_level_t *) data->top_level->table[i];
+
+                int L2_num_empty = 0;
+                int L2_num_reserved = 0;
+                int L2_num_used = 0;
+                int ii = 0;
+                for (ii = 0; ii < BIT(VSPACE_LEVEL_BITS); ii++)
+                {
+                    uintptr_t cap = bottom_table->cap[ii]; 
+
+                    if (cap == RESERVED)
+                    {
+                        L2_num_reserved++;
+                    }
+                    else if (cap == EMPTY)
+                    {
+                        L2_num_empty++;
+                    }
+                    else
+                    {
+                        L2_num_used++;
+                    }
+                }
+                printf("L2(%p) E: %6d \tR: %5d \tU: %5d \tCount: %d\n", bottom_table, L2_num_empty, L2_num_reserved, L2_num_used, ii);
+            }
+        }
+        printf("L1(%p) E: %6d \tR: %5d \tU: %d \tCount: %5d\n", data->top_level, num_empty, num_reserved, num_used, i);
+    }
+    
+     return index;
+}
+
+int sel4utils_copy_vspace(vspace_t *from, vspace_t *to)
 {
     // Walk all reservations.
     // For each: call vspace_reserve_range_at
     return 0;
-
-
 }

@@ -911,9 +911,7 @@ int sel4utils_walk_vspace(vspace_t *vspace, vka_t *vka) {
     while (sel4_res != NULL) {
         // Print something.
         long int sz = (sel4_res->end - sel4_res->start ) / (4 * 1024);
-        printf("\t[%d] %p->%p has %lu pages malloced(%u)\n", 
-            index, sel4_res->start, sel4_res->end, sz, sel4_res->malloced);
-        
+        printf("\t[%d] %p %p %lu pages %u\n", index, sel4_res->start, sz, sel4_res->malloced);
         if (sel4_res->malloced) {
             index++;
         }
@@ -964,10 +962,10 @@ int sel4utils_walk_vspace(vspace_t *vspace, vka_t *vka) {
                         L2_num_used++;
                     }
                 }
-                printf("L2(%p) E: %6d \tR: %5d \tU: %5d \tCount: %d\n", bottom_table, L2_num_empty, L2_num_reserved, L2_num_used, ii);
+                printf("L2\t L2(%p) E: %d R: %d U: %d Count: %d\n", bottom_table, L2_num_empty, L2_num_reserved, L2_num_used, ii);
             }
         }
-        printf("L1(%p) E: %6d \tR: %5d \tU: %d \tCount: %5d\n", data->top_level, num_empty, num_reserved, num_used, i);
+        printf("L1\t E: %d R: %d U: %d Count: %d\n", num_empty, num_reserved, num_used, i);
     }
     
      return index;

@@ -966,3 +966,12 @@ uintptr_t sel4utils_get_paddr(vspace_t *vspace, void *vaddr, seL4_Word type, seL
     return vka_utspace_paddr(vka, vspace_get_cookie(vspace, vaddr), type, size_bits);
 
 }
+
+int sel4utils_share_mem_at_vaddr(vspace_t *from, vspace_t *to)
+{
+    // Walk all reservations.
+    // For each: call vspace_reserve_range_at
+    return 0;
+
+
+}

@@ -903,18 +903,14 @@ uintptr_t sel4utils_get_paddr(vspace_t *vspace, void *vaddr, seL4_Word type, seL
 int sel4utils_walk_vspace(vspace_t *vspace, vka_t *vka) {
     sel4utils_alloc_data_t *data = get_alloc_data(vspace);
 
-   
     int index = 0;
     sel4utils_res_t *sel4_res = data->reservation_head;
 
     /* walk all the reservations */
     while (sel4_res != NULL) {
-        // Print something.
         long int sz = (sel4_res->end - sel4_res->start ) / (4 * 1024);
         printf("\t[%d] %p->%p %lu pages malloced(%u)\n", index, sel4_res->start, sel4_res->end, sz, sel4_res->malloced);
-       // if (sel4_res->malloced) {
-            index++;
-       // }
+        index++;
         sel4_res = sel4_res->next;
     }
 
@@ -967,7 +963,6 @@ int sel4utils_walk_vspace(vspace_t *vspace, vka_t *vka) {
         }
         printf("L1\t E: %d R: %d U: %d Count: %d\n", num_empty, num_reserved, num_used, i);
     }
-    
      return index;
 }
 

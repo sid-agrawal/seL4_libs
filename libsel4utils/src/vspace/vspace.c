@@ -911,8 +911,7 @@ int sel4utils_walk_vspace(vspace_t *vspace, vka_t *vka) {
     
     /* walk all the reservations */
     printf("\nReservations from  sel4utils_alloc_data->reservation_head:\n");
-    //while (sel4_res != NULL) {
-    while (1){//sel4_res != NULL) {
+    while (sel4_res != NULL) {
         long int sz = (sel4_res->end - sel4_res->start ) / (4 * 1024);
         printf("\t[%d] %p->%p %lu pages malloced(%u)\n", index, sel4_res->start, sel4_res->end, sz, sel4_res->malloced);
         index++;

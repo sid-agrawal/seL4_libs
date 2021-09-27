@@ -906,6 +906,7 @@ int sel4utils_walk_vspace(vspace_t *vspace, vka_t *vka) {
     int index = 0;
     sel4utils_res_t *sel4_res = data->reservation_head;
 
+    printf("===========Start of interesting output================\n");
     /* walk all the reservations */
     while (sel4_res != NULL) {
         long int sz = (sel4_res->end - sel4_res->start ) / (4 * 1024);
@@ -921,8 +922,9 @@ int sel4utils_walk_vspace(vspace_t *vspace, vka_t *vka) {
     int num_used =0;
     int i = 0;
 
-    if (data->top_level) {
-        for ( i = 0; i < BIT(VSPACE_LEVEL_BITS); i++)
+    if (data->top_level)
+    {
+        for (i = 0; i < BIT(VSPACE_LEVEL_BITS); i++)
         {
             if (data->top_level->table[i] == RESERVED)
             {
@@ -935,7 +937,7 @@ int sel4utils_walk_vspace(vspace_t *vspace, vka_t *vka) {
             else
             {
                 num_used++;
-                vspace_bottom_level_t *bottom_table = (vspace_bottom_level_t *) data->top_level->table[i];
+                vspace_bottom_level_t *bottom_table = (vspace_bottom_level_t *)data->top_level->table[i];
 
                 int L2_num_empty = 0;
                 int L2_num_reserved = 0;
@@ -943,7 +945,7 @@ int sel4utils_walk_vspace(vspace_t *vspace, vka_t *vka) {
                 int ii = 0;
                 for (ii = 0; ii < BIT(VSPACE_LEVEL_BITS); ii++)
                 {
-                    uintptr_t cap = bottom_table->cap[ii]; 
+                    uintptr_t cap = bottom_table->cap[ii];
 
                     if (cap == RESERVED)
                     {
@@ -958,10 +960,12 @@ int sel4utils_walk_vspace(vspace_t *vspace, vka_t *vka) {
                         L2_num_used++;
                     }
                 }
-                printf("L2\t L2(%p) E: %d R: %d U: %d Count: %d\n", bottom_table, L2_num_empty, L2_num_reserved, L2_num_used, ii);
+                printf("L2\t L2(%p) E: %5d \tR: %5d \tU: %5d \tCount: %5d\n",
+                       bottom_table, L2_num_empty, L2_num_reserved, L2_num_used, ii);
             }
         }
-        printf("L1\t E: %d R: %d U: %d Count: %d\n", num_empty, num_reserved, num_used, i);
+        printf("===========Start of interesting output================\n");
+        //printf("L1\t E: %d R: %d U: %d Count: %d\n", num_empty, num_reserved, num_used, i);
     }
      return index;
 }

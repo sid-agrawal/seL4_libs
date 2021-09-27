@@ -907,21 +907,25 @@ int sel4utils_walk_vspace(vspace_t *vspace, vka_t *vka) {
     sel4utils_res_t *sel4_res = data->reservation_head;
 
     printf("===========Start of interesting output================\n");
+    printf("VSPACE_NUM_LEVELS %d\n", VSPACE_NUM_LEVELS);
+    
     /* walk all the reservations */
-    while (sel4_res != NULL) {
+    printf("\nReservations from  sel4utils_alloc_data->reservation_head:\n");
+    //while (sel4_res != NULL) {
+    while (1){//sel4_res != NULL) {
         long int sz = (sel4_res->end - sel4_res->start ) / (4 * 1024);
         printf("\t[%d] %p->%p %lu pages malloced(%u)\n", index, sel4_res->start, sel4_res->end, sz, sel4_res->malloced);
         index++;
         sel4_res = sel4_res->next;
     }
 
-    printf("VSPACE_NUM_LEVELS %d\n", VSPACE_NUM_LEVELS);
 
     int num_empty = 0;
     int num_reserved =0;
     int num_used =0;
     int i = 0;
 
+    printf("\n\nIntel-32 Page Table Hierarcy from sel4utils_alloc_data->top_level->table \n");
     if (data->top_level)
     {
         for (i = 0; i < BIT(VSPACE_LEVEL_BITS); i++)
@@ -960,8 +964,9 @@ int sel4utils_walk_vspace(vspace_t *vspace, vka_t *vka) {
                         L2_num_used++;
                     }
                 }
-                printf("L2\t L2(%p) E: %5d \tR: %5d \tU: %5d \tCount: %5d\n",
-                       bottom_table, L2_num_empty, L2_num_reserved, L2_num_used, ii);
+                printf("PDE-Index(%d) \n\t" \
+                       "NUM-PTE: %5d Empty: %5d \tReserved: %5d \tUsed: %5d\n",
+                       i, ii, L2_num_empty, L2_num_reserved, L2_num_used, ii);
             }
         }
         printf("===========Start of interesting output================\n");

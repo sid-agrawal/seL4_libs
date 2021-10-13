@@ -913,7 +913,7 @@ int sel4utils_walk_vspace(vspace_t *vspace, vka_t *vka) {
     printf("\nReservations from  sel4utils_alloc_data->reservation_head:\n");
     while (sel4_res != NULL) {
         long int sz = (sel4_res->end - sel4_res->start ) / (4 * 1024);
-        printf("\t[%d] %p->%p %lu pages malloced(%u)\n", index, sel4_res->start, sel4_res->end, sz, sel4_res->malloced);
+        printf("\t[%d] 0x%x->0x%x %lu pages malloced(%u)\n", index, sel4_res->start, sel4_res->end, sz, sel4_res->malloced);
         index++;
         sel4_res = sel4_res->next;
     }
@@ -965,7 +965,7 @@ int sel4utils_walk_vspace(vspace_t *vspace, vka_t *vka) {
                 }
                 printf("PDE-Index(%d) \n\t" \
                        "NUM-PTE: %5d Empty: %5d \tReserved: %5d \tUsed: %5d\n",
-                       i, ii, L2_num_empty, L2_num_reserved, L2_num_used, ii);
+                       i, ii, L2_num_empty, L2_num_reserved, L2_num_used);
             }
         }
         printf("===========Start of interesting output================\n");

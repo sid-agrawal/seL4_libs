@@ -358,3 +358,5 @@ uintptr_t sel4utils_get_paddr(vspace_t *vspace, void *vaddr, seL4_Word type, seL
 
 // Sid'd new def.
 int sel4utils_walk_vspace(vspace_t *vspace, vka_t *vka);
+int sel4utils_copy_vspace(vspace_t *loader,
+    vspace_t *from, vspace_t *to, vka_t *vka);

@@ -851,11 +851,11 @@ int sel4utils_share_mem_at_vaddr(vspace_t *from, vspace_t *to, void *start, int 
         uintptr_t to_vaddr = (uintptr_t) vaddr + (uintptr_t) page * size_bytes;
 
         /* get the frame cap to be copied */
-        seL4_CPtr cap = get_cap(from_data->top_level, from_vaddr);
+        seL4_CPtr cap = sel4utils_get_cap(from, (void*)from_vaddr);
         if (cap == seL4_CapNull) {
-            ZF_LOGE("Cap not present in from vspace to copy, vaddr %"PRIuPTR, from_vaddr);
+            ZF_LOGE("Cap not present in from vspace to copy, vaddr %lx\n", from_vaddr);
             error = -1;
-            break;
+            continue;
         }
 
         /* create a path to the cap */
@@ -871,7 +871,8 @@ int sel4utils_share_mem_at_vaddr(vspace_t *from, vspace_t *to, void *start, int 
         /* copy the frame cap into the to cspace */
         error = vka_cnode_copy(&to_path, &from_path, res->rights);
         if (error) {
-            ZF_LOGE("Failed to copy cap, error %d\n", error);
+            ZF_LOGE("Failed to copy cap, error %d num_pages: %d vaddr: %lx\n", 
+            error, num_pages, from_vaddr);
             break;
         }
 
@@ -917,8 +918,10 @@ int sel4utils_walk_vspace(vspace_t *vspace, vka_t *vka)
     {
         int pc = (sel4_res->end - sel4_res->start) / (4 * 1024);
         total_pc += pc;
-        printf("\t[%d] 0x%x->0x%x %lu pages allocated(%u)\n", res_count,
-               sel4_res->start, sel4_res->end, pc, sel4_res->malloced);
+        printf("\t[%d] 0x%x->0x%x %lu pages allocated(%u) perms: %d\n", 
+            res_count,
+            sel4_res->start, sel4_res->end, 
+            pc, sel4_res->malloced, sel4_res->rights);
         res_count++;
         sel4_res = sel4_res->next;
     }
@@ -992,18 +995,98 @@ int sel4utils_walk_vspace(vspace_t *vspace, vka_t *vka)
     return 0;
 }
 
-uint64_t sel4utils_walk_vspace_at_level(vspace_t *vspace, vka_t *vka, int level, uintptr_t start,
-                                        int *num_empty, int *num_reserved, int *num_used)
+static seL4_CPtr get_asid_pool(seL4_CPtr asid_pool)
 {
-    sel4utils_alloc_data_t *data = get_alloc_data(vspace);
-    
+    if (asid_pool == 0) {
+        ZF_LOGW("This method will fail if run in a thread that is not in the root server cspace\n");
+        asid_pool = seL4_CapInitThreadASIDPool;
+    }
+
+    return asid_pool;
 }
-int sel4utils_copy_vspace(vspace_t *from, vspace_t *to)
+
+static seL4_CPtr assign_asid_pool(seL4_CPtr asid_pool, seL4_CPtr pd)
 {
-    // Walk all reservations.
-    // For each: call vspace_reserve_range_at
-    // For each: call share_mem_at_vaddr
+    int error = seL4_ARCH_ASIDPool_Assign(get_asid_pool(asid_pool), pd);
+    if (error) {
+        ZF_LOGE("Failed to assign asid pool\n");
+    }
+
+    return error;
+}
+
+int sel4utils_copy_vspace(vspace_t *loader, vspace_t *from, vspace_t *to, vka_t *vka)
+{
+    
+    // Give vspace root
+    // assign asid pool
+    static vka_object_t vspace_root_object;
+    static sel4utils_alloc_data_t alloc_data; // remove from stack.
+
+    int error = vka_alloc_vspace_root(vka, &vspace_root_object);
+    if (error)
+    {
+        ZF_LOGE("Failed to allocate page directory for new process: %d\n", error);
+        goto error;
+    }
+
+    /* assign an asid pool */
+    if (!config_set(CONFIG_X86_64) &&
+        assign_asid_pool(seL4_CapInitThreadASIDPool, vspace_root_object.cptr) != seL4_NoError)
+    {
+        goto error;
+    }
+    // Create empty vspace
+
+    error = sel4utils_get_vspace(
+         loader,
+         to,
+         &alloc_data,
+         vka,
+         vspace_root_object.cptr,
+         NULL, //sel4utils_allocated_object,
+         NULL // (void *) process
+     );
+    if (error)
+    {
+        ZF_LOGE("Failed to get new vspace while making copy: %d\n in %s", error, __FUNCTION__);
+        goto error;
+    }
+
+
+
+    sel4utils_alloc_data_t *from_data = get_alloc_data(from);
+    sel4utils_res_t *from_sel4_res = from_data->reservation_head;
+
+    printf("===========Start of interesting output================\n");
+    printf("VSPACE_NUM_LEVELS %d\n", VSPACE_NUM_LEVELS);
+
+    /* walk all the reservations */
+    printf("\nReservations from  sel4utils_alloc_data->reservation_head:\n");
+    while (from_sel4_res != NULL)
+    {
+        // Reserver
+        reservation_t new_res = sel4utils_reserve_range_at(to, 
+        (void *)from_sel4_res->start, 
+        from_sel4_res->end - from_sel4_res->start,
+        from_sel4_res->rights, from_sel4_res->cacheable);
+
+        int num_pages = (from_sel4_res->end - from_sel4_res->start) / PAGE_SIZE_4K;
+            // map
+            sel4utils_share_mem_at_vaddr(from, to,
+                                         (void *)from_sel4_res->start,
+                                         num_pages,
+                                         PAGE_BITS_4K,
+                                         (void *)from_sel4_res->start,
+                                         new_res);
+        // Move to next node.
+        from_sel4_res = from_sel4_res->next;
+    }
+    // For each reservation: call share_mem_at_vaddr
     return 0;
+
+error:
+    return -1;
 }
 
 

@@ -537,7 +537,9 @@ uintptr_t sel4utils_elf_get_section(const elf_t *elf_file, const char *section_n
 void *sel4utils_elf_load(vspace_t *loadee, vspace_t *loader, vka_t *loadee_vka, vka_t *loader_vka,
                          const elf_t *elf_file)
 {
-    return sel4utils_elf_load_record_regions(loadee, loader, loadee_vka, loader_vka, elf_file, NULL, 0);
+    int num_regions = count_loadable_regions(elf_file);
+    sel4utils_elf_region_t *regions = malloc(sizeof(sel4utils_elf_region_t) * num_regions);
+    return sel4utils_elf_load_record_regions(loadee, loader, loadee_vka, loader_vka, elf_file, regions, 0);
 }
 
 uint32_t sel4utils_elf_num_phdrs(const elf_t *elf_file)

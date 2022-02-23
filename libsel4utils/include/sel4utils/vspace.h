@@ -66,7 +66,7 @@ struct sel4utils_res {
     uintptr_t end;
     seL4_CapRights_t rights;
     int cacheable;
-    int malloced;
+    int malloced; // It is about the memory for this node.
     bool rights_deferred;
     struct sel4utils_res *next;
 };

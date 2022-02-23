@@ -45,6 +45,7 @@ static int map_page(vka_t *vka, vspace_map_page_fn_t map_page_fn, vspace_get_map
 #endif
 
     *num_objects = 0;
+    // siagraw: Its seL4_ARM_Page_Map in our case.
     int error = map_page_fn(frame, root, (seL4_Word) vaddr, rights, attr);
     while (error == seL4_FailedLookup) {
         vspace_map_obj_t obj = {0};

@@ -55,6 +55,15 @@ typedef struct vspace_bottom_level {
 typedef int(*sel4utils_map_page_fn)(vspace_t *vspace, seL4_CPtr cap, void *vaddr, seL4_CapRights_t rights,
                                     int cacheable, size_t size_bits);
 
+enum sel4utils_reservation_type {
+    SEL4UTILS_RES_TYPE_REGION,
+    SEL4UTILS_RES_TYPE_STACK,
+    SEL4UTILS_RES_TYPE_CODE,
+    SEL4UTILS_RES_TYPE_GLOBAL_DATA,
+    SEL4UTILS_RES_TYPE_UNKNOWN
+};
+
+typedef enum sel4utils_reservation_type sel4utils_reservation_type_t;
 
 // This looks like a linked list of the actual regions in the address space.
 // Regions <-> reservations.
@@ -68,6 +77,7 @@ struct sel4utils_res {
     int cacheable;
     int malloced; // It is about the memory for this node.
     bool rights_deferred;
+    sel4utils_reservation_type_t type;
     struct sel4utils_res *next;
 };
 typedef struct sel4utils_res sel4utils_res_t;

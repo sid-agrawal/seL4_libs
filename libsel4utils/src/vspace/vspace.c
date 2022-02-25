@@ -983,8 +983,7 @@ int sel4utils_walk_vspace(vspace_t *vspace, vka_t *vka)
                         break;
                     default:
                         num_used++;
-                        printf("\t\t\tFound: frame(%d c(%lx)) at index %d in L1 level node\n", 
-                        node_1->cap[i], node_1->cookie[i], i);
+                        //printf("\t\t\tFound: frame(%d c(%lx)) at index %d in L1 level node\n", node_1->cap[i], node_1->cookie[i], i);
                         break;
                     }
                 }

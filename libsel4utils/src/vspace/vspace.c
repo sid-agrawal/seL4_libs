@@ -918,10 +918,11 @@ int sel4utils_walk_vspace(vspace_t *vspace, vka_t *vka)
     {
         int pc = (sel4_res->end - sel4_res->start) / (4 * 1024);
         total_pc += pc;
-        printf("\t[%d] 0x%x->0x%x %lu pages allocated(%u) perms: %d\n", 
+        printf("\t[%d] 0x%x->0x%x %lu pages allocated(%u) perms: %d type: %d\n", 
             res_count,
             sel4_res->start, sel4_res->end, 
-            pc, sel4_res->malloced, sel4_res->rights);
+            pc, sel4_res->malloced, sel4_res->rights,
+            sel4_res->type);
         res_count++;
         sel4_res = sel4_res->next;
     }
@@ -1063,22 +1064,29 @@ int sel4utils_copy_vspace(vspace_t *loader, vspace_t *from, vspace_t *to, vka_t 
 
     /* walk all the reservations */
     printf("\nReservations from  sel4utils_alloc_data->reservation_head:\n");
+    int num_pages;
     while (from_sel4_res != NULL)
     {
         // Reserver
-        reservation_t new_res = sel4utils_reserve_range_at(to, 
-        (void *)from_sel4_res->start, 
-        from_sel4_res->end - from_sel4_res->start,
-        from_sel4_res->rights, from_sel4_res->cacheable);
+        reservation_t new_res = sel4utils_reserve_range_at(to,
+                                                           (void *)from_sel4_res->start,
+                                                           from_sel4_res->end - from_sel4_res->start,
+                                                           from_sel4_res->rights, from_sel4_res->cacheable);
 
-        int num_pages = (from_sel4_res->end - from_sel4_res->start) / PAGE_SIZE_4K;
-            // map
-            sel4utils_share_mem_at_vaddr(from, to,
-                                         (void *)from_sel4_res->start,
-                                         num_pages,
-                                         PAGE_BITS_4K,
-                                         (void *)from_sel4_res->start,
-                                         new_res);
+        num_pages = (from_sel4_res->end - from_sel4_res->start) / PAGE_SIZE_4K;
+        if (num_pages == 17)
+        {
+            printf("Skipping the stack region, as we know it is 17 pages\n");
+        } else {
+
+        // map
+        sel4utils_share_mem_at_vaddr(from, to,
+                                     (void *)from_sel4_res->start,
+                                     num_pages,
+                                     PAGE_BITS_4K,
+                                     (void *)from_sel4_res->start,
+                                     new_res);
+        }
         // Move to next node.
         from_sel4_res = from_sel4_res->next;
     }

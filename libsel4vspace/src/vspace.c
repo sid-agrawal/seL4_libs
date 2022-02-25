@@ -7,6 +7,36 @@
 #include <autoconf.h>
 #include <vspace/vspace.h>
 #include <utils/page.h>
+#include <utils/page.h>
+
+
+// siagraw. This is highly bad idea/
+enum sel4utils_reservation_type {
+    SEL4UTILS_RES_TYPE_REGION,
+    SEL4UTILS_RES_TYPE_STACK,
+    SEL4UTILS_RES_TYPE_CODE,
+    SEL4UTILS_RES_TYPE_GLOBAL_DATA,
+    SEL4UTILS_RES_TYPE_UNKNOWN
+};
+
+typedef enum sel4utils_reservation_type sel4utils_reservation_type_t;
+
+// This looks like a linked list of the actual regions in the address space.
+// Regions <-> reservations.
+// How do I know if a region is backed or not?
+// One  sel4utils_res points to another.
+// How do I connect this to the actual pages?
+struct sel4utils_res {
+    uintptr_t start;
+    uintptr_t end;
+    seL4_CapRights_t rights;
+    int cacheable;
+    int malloced; // It is about the memory for this node.
+    bool rights_deferred;
+    sel4utils_reservation_type_t type;
+    struct sel4utils_res *next;
+};
+typedef struct sel4utils_res sel4utils_res_t;
 
 void *vspace_new_sized_stack(vspace_t *vspace, size_t n_pages)
 {
@@ -16,6 +46,9 @@ void *vspace_new_sized_stack(vspace_t *vspace, size_t n_pages)
     /* one extra page for the guard */
     reservation_t reserve = vspace_reserve_range(vspace, (n_pages + 1) * PAGE_SIZE_4K,
                                                  seL4_AllRights, 1, &vaddr);
+
+    sel4utils_res_t *sel4utils_res = (sel4utils_res_t*)&reserve.res;                
+    sel4utils_res->type = SEL4UTILS_RES_TYPE_STACK;
 
     if (reserve.res == NULL) {
         return NULL;

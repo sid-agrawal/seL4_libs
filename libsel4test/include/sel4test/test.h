@@ -74,7 +74,9 @@ struct env {
     int num_regions;
     sel4utils_elf_region_t regions[MAX_REGIONS];
     
-    // Added sel4-gpi
+    // Added for libsel4gpi
+    seL4_CPtr cpu_endpoint;
+    seL4_CPtr ads_endpoint;
     seL4_CPtr counter_endpoint;
 };
 typedef struct env *env_t;

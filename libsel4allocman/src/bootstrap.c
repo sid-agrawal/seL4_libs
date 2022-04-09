@@ -734,7 +734,10 @@ static int _cnode_reservation(allocman_t *alloc, size_t cnode_size) {
     return allocman_configure_utspace_reserve(alloc, (struct allocman_utspace_chunk) {cnode_size + seL4_SlotBits, seL4_CapTableObject, 1});
 }
 
-allocman_t *bootstrap_use_current_1level(seL4_CPtr root_cnode, size_t cnode_size, seL4_CPtr start_slot, seL4_CPtr end_slot, size_t pool_size, void *pool) {
+allocman_t *bootstrap_use_current_1level(seL4_CPtr root_cnode, size_t cnode_size,
+                                         seL4_CPtr start_slot, seL4_CPtr end_slot, 
+                                         size_t pool_size, void *pool)
+{
     allocman_t *alloc;
     int error;
     bootstrap_info_t *info;

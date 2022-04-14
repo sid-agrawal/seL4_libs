@@ -1071,6 +1071,11 @@ int sel4utils_copy_vspace(vspace_t *loader, vspace_t *from, vspace_t *to, vka_t 
                                                            (void *)from_sel4_res->start,
                                                            from_sel4_res->end - from_sel4_res->start,
                                                            from_sel4_res->rights, from_sel4_res->cacheable);
+        if (new_res.res == NULL)
+        {
+            ZF_LOGE("Failed to reserve range\n");
+            goto error;
+        }
 
         num_pages = (from_sel4_res->end - from_sel4_res->start) / PAGE_SIZE_4K;
         if (num_pages == 17)

@@ -154,6 +154,7 @@ int sel4utils_configure_thread_config(vka_t *vka, vspace_t *parent, vspace_t *al
     return 0;
 }
 
+// siagraw: Do not worry about TLS, it just some new place on the stack.
 int sel4utils_start_thread(sel4utils_thread_t *thread, sel4utils_thread_entry_fn entry_point,
                            void *arg0, void *arg1, int resume)
 {

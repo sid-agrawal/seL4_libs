@@ -19,7 +19,7 @@ debug_safe_printf(const char *format, ...)
 __attribute__((format(printf, 1, 2)))
 __attribute__((no_instrument_function));
 
-void debug_cap_identify(seL4_CPtr cap);
+void debug_cap_identify(char *prefix, seL4_CPtr cap);
 
 #ifdef CONFIG_DEBUG_BUILD
 static inline int debug_cap_is_valid(seL4_CPtr cap)

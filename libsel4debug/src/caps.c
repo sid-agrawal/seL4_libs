@@ -10,11 +10,11 @@
 #include <sel4/sel4.h>
 #include <stdio.h>
 
-void debug_cap_identify(seL4_CPtr cap)
+void debug_cap_identify(char *prefix, seL4_CPtr cap)
 {
 #ifdef CONFIG_DEBUG_BUILD
     int type = seL4_DebugCapIdentify(cap);
-    printf("Cap %"SEL4_PRIu_word" has type %d\n", cap, type);
+    printf("%s: Cap %"SEL4_PRIu_word" has type %d\n", prefix, cap, type);
 #else
     printf("DEBUG_BUILD not set, can't get type of cap %"SEL4_PRIu_word"\n", cap);
 #endif

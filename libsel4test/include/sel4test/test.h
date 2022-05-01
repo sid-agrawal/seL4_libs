@@ -78,8 +78,7 @@ struct env {
 
     seL4_CPtr self_as_cptr;
     // Added for libsel4gpi
-    seL4_CPtr cpu_endpoint;
-    seL4_CPtr ads_endpoint;
+    seL4_CPtr gpi_endpoint;
 
 };
 typedef struct env *env_t;

@@ -433,6 +433,9 @@ static int elf_reserve_regions_in_vspace(vspace_t *loadee, const elf_t *elf_file
         ZF_LOGE("Failed to prepare reservations");
         return error;
     }
+
+    /* siagraw(TDOD): Add type here. */
+    /* Find a way to connec the sel4utils_elf_region_t to the res_t */
     error = create_reservations(loadee, num_regions, regions, mapanywhere);
     if (error) {
         ZF_LOGE("Failed to create reservations");
@@ -539,6 +542,7 @@ void *sel4utils_elf_load(vspace_t *loadee, vspace_t *loader, vka_t *loadee_vka, 
 {
     int num_regions = count_loadable_regions(elf_file);
     sel4utils_elf_region_t *regions = malloc(sizeof(sel4utils_elf_region_t) * num_regions);
+    /* This creates reservations too */
     return sel4utils_elf_load_record_regions(loadee, loader, loadee_vka, loader_vka, elf_file, regions, 0);
 }
 

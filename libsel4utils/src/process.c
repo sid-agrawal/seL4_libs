@@ -559,9 +559,9 @@ int sel4utils_configure_process_custom(sel4utils_process_t *process, vka_t *vka,
         elf_t elf;
         elf_newFile(file, size, &elf);
 
-        if (config.do_elf_load) {
+        if (config.do_elf_load) { /* Only load and why not reserve ? */
             process->entry_point = sel4utils_elf_load(&process->vspace, spawner_vspace, vka, vka, &elf);
-        } else {
+        } else { /* Just reserve */
             process->num_elf_regions = sel4utils_elf_num_regions(&elf);
             process->elf_regions = calloc(process->num_elf_regions, sizeof(*process->elf_regions));
             if (!process->elf_regions) {

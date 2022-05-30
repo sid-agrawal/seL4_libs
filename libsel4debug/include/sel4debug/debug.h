@@ -7,6 +7,7 @@
 #pragma once
 
 #include <autoconf.h>
+#include <stdio.h>
 
 #include <sel4/sel4.h>
 #include <sel4/types.h>
@@ -55,4 +56,5 @@ static inline int debug_cap_is_notification(seL4_CPtr cap)
 #endif /* CONFIG_DEBUG_BUILD */
 
 void debug_print_bootinfo(seL4_BootInfo *info);
+char *human_readable_size(size_t size);
 

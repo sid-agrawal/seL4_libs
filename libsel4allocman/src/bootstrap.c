@@ -1147,7 +1147,10 @@ allocman_t *bootstrap_use_current_simple(simple_t *simple, size_t pool_size, voi
     allocman_t *allocman;
     int error;
     /* Initialize inside the current 1 level cspace as defined by simple */
-    allocman = bootstrap_use_current_1level(simple_get_cnode(simple), simple_get_cnode_size_bits(simple), simple_last_valid_cap(simple) + 1, BIT(simple_get_cnode_size_bits(simple)), pool_size, pool);
+    allocman = bootstrap_use_current_1level(simple_get_cnode(simple),
+                                            simple_get_cnode_size_bits(simple),
+                                            simple_last_valid_cap(simple) + 1,
+                                            BIT(simple_get_cnode_size_bits(simple)), pool_size, pool);
     if (!allocman) {
         LOG_ERROR("Failed to initialize an allocman");
         return allocman;

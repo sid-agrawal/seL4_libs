@@ -75,7 +75,7 @@ sel4utils_elf_load_record_regions(vspace_t *loadee, vspace_t *loader, vka_t *loa
  * @param loader the vspace we are loading from
  * @param loadee_vka allocator to use for allocation in the loadee vspace
  * @param loader_vka allocator to use for loader vspace. Can be the same as loadee_vka.
- * @param image_name name of the image in the cpio archive to load.
+ * @param elf the elf file to load
  *
  * @return The entry point of the new process, NULL on error
  */

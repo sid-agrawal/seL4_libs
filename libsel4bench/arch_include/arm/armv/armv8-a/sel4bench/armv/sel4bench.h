@@ -31,7 +31,7 @@ static FASTFN void sel4bench_init()
 {
     //do kernel-mode PMC init
 #ifndef CONFIG_EXPORT_PMU_USER
-    seL4_DebugRun(&sel4bench_private_init, NULL);
+    // seL4_DebugRun(&sel4bench_private_init, NULL);
 #endif
 
     //ensure all counters are in the stopped state

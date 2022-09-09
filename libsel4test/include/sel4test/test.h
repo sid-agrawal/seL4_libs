@@ -73,7 +73,7 @@ struct env {
     
     // Self info for proc asper libsel4gpi
 
-    seL4_CPtr self_as_cptr;
+    seL4_CPtr self_ads_cptr;
     // Added for libsel4gpi
     seL4_CPtr gpi_endpoint;
 

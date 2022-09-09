@@ -409,13 +409,13 @@ typedef void (*vspace_free_reservation_fn)(vspace_t *vspace, reservation_t reser
 typedef void (*vspace_free_reservation_by_vaddr_fn)(vspace_t *vspace, void *vaddr);
 
 /**
- * Get the capability mapped at a virtual address.
+ * Get the frame capability mapped at a virtual address.
  *
  *
  * @param vspace the virtual memory allocator to use.
  * @param vaddr the virtual address to get the cap for.
  *
- * @return the cap mapped to this virtual address, 0 otherwise.
+ * @return the frame cap mapped to this virtual address, 0 otherwise.
  */
 typedef seL4_CPtr(*vspace_get_cap_fn)(vspace_t *vspace, void *vaddr);
 

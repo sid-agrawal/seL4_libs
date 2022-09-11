@@ -34,15 +34,15 @@ void debug_print_bootinfo(seL4_BootInfo *info)
         int index = info->untypedList[i].sizeBits;
         assert(index < ARRAY_SIZE(sizes));
         sizes[index]++;
-        printf("%p | %zu | %d\n", (void *)info->untypedList[i].paddr, (size_t)info->untypedList[i].sizeBits,
-               (int)info->untypedList[i].isDevice);
+        // printf("%p | %zu | %d\n", (void *)info->untypedList[i].paddr, (size_t)info->untypedList[i].sizeBits,
+        //        (int)info->untypedList[i].isDevice);
     }
 
-    printf("Untyped summary\n");
-    for (int i = 0; i < ARRAY_SIZE(sizes); i++) {
-        if (sizes[i] != 0) {
-            printf("%d untypeds of size %d\n", sizes[i], i);
-        }
-    }
+    // printf("Untyped summary\n");
+    // for (int i = 0; i < ARRAY_SIZE(sizes); i++) {
+    //     if (sizes[i] != 0) {
+    //         printf("%d untypeds of size %d\n", sizes[i], i);
+    //     }
+    // }
 }
 

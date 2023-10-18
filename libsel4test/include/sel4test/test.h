@@ -73,13 +73,10 @@ struct env {
     int cspace_size_bits;
     int num_regions;
     sel4utils_elf_region_t regions[MAX_REGIONS];
-    
-    // Self info for proc asper libsel4gpi
 
-    seL4_CPtr self_ads_cptr;
     // Added for libsel4gpi
+    seL4_CPtr self_ads_cptr;
     seL4_CPtr gpi_endpoint;
-
 };
 typedef struct env *env_t;
 

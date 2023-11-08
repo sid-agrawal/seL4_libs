@@ -467,7 +467,7 @@ void sel4utils_unmap_pages(vspace_t *vspace, void *vaddr, size_t num_pages, size
             vka_cspace_free(vka, cap); // Free the space taken by the cap??
             //siagraw: cookis is the meta-data(??) in the lowest level Shadown-page-table.
             // TODO(siagraw) : double check what we store in the cookies.
-            if (sel4utils_get_cookie(vspace, vaddr)) { 
+            if (sel4utils_get_cookie(vspace, vaddr)) {
                 vka_utspace_free(vka, kobject_get_type(KOBJECT_FRAME, size_bits),
                                  size_bits, sel4utils_get_cookie(vspace, vaddr));
             }
@@ -871,7 +871,7 @@ int sel4utils_share_mem_at_vaddr(vspace_t *from, vspace_t *to, void *start, int 
         /* copy the frame cap into the to cspace */
         error = vka_cnode_copy(&to_path, &from_path, res->rights);
         if (error) {
-            ZF_LOGE("Failed to copy cap, error %d num_pages: %d vaddr: %lx\n", 
+            ZF_LOGE("Failed to copy cap, error %d num_pages: %d vaddr: %lx\n",
             error, num_pages, from_vaddr);
             break;
         }
@@ -918,9 +918,9 @@ int sel4utils_walk_vspace(vspace_t *vspace, vka_t *vka)
     {
         int pc = (sel4_res->end - sel4_res->start) / (4 * 1024);
         total_pc += pc;
-        printf("\t[%d] 0x%x->0x%x %lu pages allocated(%u) perms: %d type: %d\n", 
+        printf("\t[%d] 0x%lx->0x%x %lu pages allocated(%u) perms: %d type: %d\n",
             res_count,
-            sel4_res->start, sel4_res->end, 
+            sel4_res->start, sel4_res->end,
             pc, sel4_res->malloced, sel4_res->rights,
             sel4_res->type);
         res_count++;
@@ -1017,7 +1017,7 @@ static seL4_CPtr assign_asid_pool(seL4_CPtr asid_pool, seL4_CPtr pd)
 
 int sel4utils_copy_vspace(vspace_t *loader, vspace_t *from, vspace_t *to, vka_t *vka)
 {
-    
+
     // Give vspace root
     // assign asid pool
     static vka_object_t vspace_root_object;

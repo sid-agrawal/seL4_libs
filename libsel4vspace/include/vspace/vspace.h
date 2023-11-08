@@ -468,7 +468,7 @@ typedef int (*vspace_share_mem_at_vaddr_fn)(vspace_t *from, vspace_t *to, void *
 
 /* Portable virtual memory allocation interface */
 struct vspace {
-    void *data;
+    void *data; /*It is the same sel4utils_alloc_data_t in process_t*/
 
     vspace_new_pages_fn new_pages;
     vspace_map_pages_fn map_pages;

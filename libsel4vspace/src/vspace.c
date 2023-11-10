@@ -9,34 +9,8 @@
 #include <utils/page.h>
 #include <utils/page.h>
 
+#include <sel4utils/vspace.h>
 
-// siagraw. This is highly bad idea/
-enum sel4utils_reservation_type {
-    SEL4UTILS_RES_TYPE_REGION,
-    SEL4UTILS_RES_TYPE_STACK,
-    SEL4UTILS_RES_TYPE_CODE,
-    SEL4UTILS_RES_TYPE_GLOBAL_DATA,
-    SEL4UTILS_RES_TYPE_UNKNOWN
-};
-
-typedef enum sel4utils_reservation_type sel4utils_reservation_type_t;
-
-// This looks like a linked list of the actual regions in the address space.
-// Regions <-> reservations.
-// How do I know if a region is backed or not?
-// One  sel4utils_res points to another.
-// How do I connect this to the actual pages?
-struct sel4utils_res {
-    uintptr_t start;
-    uintptr_t end;
-    seL4_CapRights_t rights;
-    int cacheable;
-    int malloced; // It is about the memory for this node.
-    bool rights_deferred;
-    sel4utils_reservation_type_t type;
-    struct sel4utils_res *next;
-};
-typedef struct sel4utils_res sel4utils_res_t;
 
 void *vspace_new_sized_stack(vspace_t *vspace, size_t n_pages)
 {
@@ -46,20 +20,17 @@ void *vspace_new_sized_stack(vspace_t *vspace, size_t n_pages)
     /* one extra page for the guard */
     reservation_t reserve = vspace_reserve_range(vspace, (n_pages + 1) * PAGE_SIZE_4K,
                                                  seL4_AllRights, 1, &vaddr);
-
-    sel4utils_res_t *sel4utils_res = (sel4utils_res_t*)&reserve.res;                
-    sel4utils_res->type = SEL4UTILS_RES_TYPE_STACK;
-
     if (reserve.res == NULL) {
         return NULL;
     }
+    sel4utils_res_t *sel4utils_res = reservation_to_res(reserve);
+    sel4utils_res->type = SEL4UTILS_RES_TYPE_STACK;
 
     /* reserve the first page as the guard */
     uintptr_t stack_bottom = (uintptr_t) vaddr + PAGE_SIZE_4K;
 
     /* create and map the pages */
     error = vspace_new_pages_at_vaddr(vspace, (void *) stack_bottom, n_pages, seL4_PageBits, reserve);
-
     if (error) {
         vspace_free_reservation(vspace, reserve);
         return NULL;
@@ -112,6 +83,8 @@ void *vspace_share_mem(vspace_t *from, vspace_t *to, void *start, int num_pages,
         ZF_LOGE("Failed to reserve range");
         return NULL;
     }
+    sel4utils_res_t *sel4utils_res = reservation_to_res(res);
+    sel4utils_res->type = SEL4UTILS_RES_TYPE_SHARED_FRAMES;
 
     int error = vspace_share_mem_at_vaddr(from, to, start, num_pages, size_bits, result, res);
     if (error) {
@@ -120,7 +93,7 @@ void *vspace_share_mem(vspace_t *from, vspace_t *to, void *start, int num_pages,
     }
 
     /* clean up reservation */
-    vspace_free_reservation(to, res);
+    // vspace_free_reservation(to, res);
 
     return result;
 }
@@ -162,11 +135,10 @@ void *vspace_new_pages_with_config(vspace_t *vspace, vspace_new_pages_config_t *
     }
 
     UNUSED int error = vspace_new_pages_at_vaddr_with_config(vspace, config, res);
-    vspace_free_reservation(vspace, res);
-
     if (error) {
         return NULL;
     }
+    //vspace_free_reservation(vspace, res);
 
     return config->vaddr;
 }

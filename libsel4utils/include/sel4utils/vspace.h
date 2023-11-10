@@ -43,7 +43,7 @@ typedef struct vspace_mid_level {
      * sub table, there is the option of pointing directly to a page. This allows more
      * efficient memory usage for book keeping large pages */
     uintptr_t table[VSPACE_LEVEL_SIZE];
-    // These can point to either more mid-levels or 
+    // These can point to either more mid-levels or
     // bottom level depending on values of VSPACE_NUM_LEVELS
 } vspace_mid_level_t;
 
@@ -56,14 +56,32 @@ typedef int(*sel4utils_map_page_fn)(vspace_t *vspace, seL4_CPtr cap, void *vaddr
                                     int cacheable, size_t size_bits);
 
 enum sel4utils_reservation_type {
-    SEL4UTILS_RES_TYPE_REGION,
+    SEL4UTILS_RES_TYPE_ELF = 1, /* This came from ELF loading and we not distinguishing code/data from the elf for now.*/
     SEL4UTILS_RES_TYPE_STACK,
-    SEL4UTILS_RES_TYPE_CODE,
-    SEL4UTILS_RES_TYPE_GLOBAL_DATA,
-    SEL4UTILS_RES_TYPE_UNKNOWN
+    SEL4UTILS_RES_TYPE_HEAP,
+    SEL4UTILS_RES_TYPE_SHARED_FRAMES,
+    SEL4UTILS_RES_TYPE_OTHER,
 };
-
 typedef enum sel4utils_reservation_type sel4utils_reservation_type_t;
+
+static inline char * human_readable_va_res_type(sel4utils_reservation_type_t type)
+ {
+    switch (type) {
+        case SEL4UTILS_RES_TYPE_ELF:
+            return "ELF";
+        case SEL4UTILS_RES_TYPE_STACK:
+            return "STACK";
+        case SEL4UTILS_RES_TYPE_HEAP:
+            return "HEAP";
+        case SEL4UTILS_RES_TYPE_SHARED_FRAMES:
+            return "SHARED_FRAMES";
+        case SEL4UTILS_RES_TYPE_OTHER:
+            return "OTHER";
+        default:
+            return "UNKNOWN";
+    }
+}
+
 
 // This looks like a linked list of the actual regions in the address space.
 // Regions <-> reservations.

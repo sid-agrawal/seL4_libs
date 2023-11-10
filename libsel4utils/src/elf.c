@@ -14,6 +14,7 @@
 #include <sel4utils/util.h>
 #include <sel4utils/mapping.h>
 #include <sel4utils/elf.h>
+#include <sel4utils/vspace.h>
 
 /*
  * Convert ELF permissions into seL4 permissions.
@@ -241,10 +242,14 @@ static int create_reservations(vspace_t *loadee, size_t total_regions, sel4utils
                                                              regions[i].rights,
                                                              regions[i].cacheable);
         }
-        if (regions[i].reservation.res == NULL) {
+
+        if (regions[i].reservation.res == NULL)
+        {
             ZF_LOGE("Failed to make reservation: %p, %zd", regions[i].reservation_vstart, regions[i].reservation_size);
             return -1;
         }
+        sel4utils_res_t *sel4utils_res = reservation_to_res(regions[i].reservation);
+        sel4utils_res->type = SEL4UTILS_RES_TYPE_ELF;
     }
     return 0;
 

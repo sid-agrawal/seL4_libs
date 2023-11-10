@@ -12,6 +12,7 @@
 #include <stddef.h>
 #include <vka/object.h>
 #include <vspace/page.h>
+#include <vspace/page.h>
 
 typedef struct vspace vspace_t;
 

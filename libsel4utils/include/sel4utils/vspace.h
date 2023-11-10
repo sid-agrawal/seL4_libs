@@ -84,10 +84,6 @@ static inline char * human_readable_va_res_type(sel4utils_reservation_type_t typ
 
 
 // This looks like a linked list of the actual regions in the address space.
-// Regions <-> reservations.
-// How do I know if a region is backed or not?
-// One  sel4utils_res points to another.
-// How do I connect this to the actual pages?
 struct sel4utils_res {
     uintptr_t start;
     uintptr_t end;

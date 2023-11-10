@@ -918,11 +918,6 @@ int sel4utils_walk_vspace(vspace_t *vspace, vka_t *vka)
     {
         int pc = (sel4_res->end - sel4_res->start) / (4 * 1024);
         total_pc += pc;
-        printf("\t[%d] 0x%lx->0x%x %lu pages allocated(%u) perms: %d type: %d\n",
-            res_count,
-            sel4_res->start, sel4_res->end,
-            pc, sel4_res->malloced, sel4_res->rights,
-            sel4_res->type);
         res_count++;
         sel4_res = sel4_res->next;
     }

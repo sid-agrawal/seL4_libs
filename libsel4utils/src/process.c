@@ -316,11 +316,14 @@ int sel4utils_spawn_process_v(sel4utils_process_t *process, vka_t *vka, vspace_t
         return -1;
     }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
     /* copy the environment */
     error = sel4utils_stack_copy_args(vspace, &process->vspace, vka, envc, envp, dest_envp, &initial_stack_pointer);
     if (error) {
         return -1;
     }
+#pragma GCC diagnostic pop
 
     /* we need to make sure the stack is aligned to a double word boundary after we push on everything else
      * below this point. First, work out how much we are going to push */

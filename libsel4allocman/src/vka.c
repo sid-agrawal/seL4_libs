@@ -170,6 +170,7 @@ static uintptr_t am_vka_utspace_paddr (void *data, seL4_Word target, seL4_Word t
      * as passed to Untyped_Retype, so do a conversion here */
     size_bits = vka_get_object_size(type, size_bits);
 
+    assert(target != (seL4_Word)NULL);
     return allocman_utspace_paddr((allocman_t *)data, target, size_bits);
 }
 

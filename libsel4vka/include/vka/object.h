@@ -14,6 +14,8 @@
 #include <string.h>
 #include <utils/util.h>
 
+#include <sel4gpi/cap_tracking.h>
+
 /*
  * A wrapper to hold all the allocation information for an 'object'
  * An object here is just combination of cptr and untyped allocation
@@ -199,14 +201,59 @@ static inline int vka_alloc_cnode_object(vka_t *vka, uint32_t slot_bits, vka_obj
 /* For arch specific allocations we call upon kobject to avoid code duplication */
 static inline int vka_alloc_frame(vka_t *vka, uint32_t size_bits, vka_object_t *result)
 {
-    return vka_alloc_object(vka, kobject_get_type(KOBJECT_FRAME, size_bits), size_bits, result);
+    int error =  vka_alloc_object(vka, kobject_get_type(KOBJECT_FRAME, size_bits), size_bits, result);
+    if (error == 0)
+    {
+        /* Track osmosis_cap info
+
+    /* Track osmosis_cap info
+
+
+
+    */
+        /* (XXX creating a memory leak here)*/
+        osmosis_cap_t *cap_info = malloc(sizeof(osmosis_cap_t));
+        assert(cap_info != NULL);
+        cap_info->slot = result->cptr;
+        cap_info->type = kobject_get_type(KOBJECT_FRAME, size_bits);
+        cap_info->isUntyped = false;
+        cap_info->paddr = vka_object_paddr(vka, result);
+
+        cap_info->isMinted = false;
+        cap_info->minted_from = 0;
+    }
+    ZF_LOGE("Adding info for cap: %lu", result->cptr);
+    return error;
 }
+
 
 /* For arch specific allocations we call upon kobject to avoid code duplication */
 static inline int vka_alloc_frame_maybe_device(vka_t *vka, uint32_t size_bits, bool can_use_dev, vka_object_t *result)
 {
-    return vka_alloc_object_at_maybe_dev(vka, kobject_get_type(KOBJECT_FRAME, size_bits),
+    int error = vka_alloc_object_at_maybe_dev(vka, kobject_get_type(KOBJECT_FRAME, size_bits),
                                          size_bits, VKA_NO_PADDR, can_use_dev, result);
+    if (error == 0)
+    {
+        /* Track osmosis_cap info
+
+    /* Track osmosis_cap info
+
+
+
+    */
+        /* (XXX creating a memory leak here)*/
+        osmosis_cap_t *cap_info = malloc(sizeof(osmosis_cap_t));
+        assert(cap_info != NULL);
+        cap_info->slot = result->cptr;
+        cap_info->type = kobject_get_type(KOBJECT_FRAME, size_bits);
+        cap_info->isUntyped = false;
+        cap_info->paddr = vka_object_paddr(vka, result);
+
+        cap_info->isMinted = false;
+        cap_info->minted_from = 0;
+    }
+    ZF_LOGE("Adding info for cap: %lu", result->cptr);
+    return error;
 }
 
 static inline int vka_alloc_frame_at(vka_t *vka, uint32_t size_bits, uintptr_t paddr,

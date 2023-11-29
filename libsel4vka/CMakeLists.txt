@@ -62,6 +62,7 @@ target_link_libraries(
         utils
         sel4vka_Config
         sel4_autoconf
+        sel4gpi
 )
 if(KernelDebugBuild)
     target_link_libraries(sel4vka PUBLIC sel4debug)

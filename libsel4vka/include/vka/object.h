@@ -223,7 +223,7 @@ static inline int vka_alloc_frame(vka_t *vka, uint32_t size_bits, vka_object_t *
         cap_info->minted_from = 0;
 
         gpi_add_cap_data(cap_info);
-        ZF_LOGE("Adding info for cap: %lu %lx", cap_info->slot, cap_info->paddr);
+        // ZF_LOGE("Adding info for cap: %lu %lx", cap_info->slot, cap_info->paddr);
         free(cap_info);
     }
     return error;
@@ -255,7 +255,7 @@ static inline int vka_alloc_frame_maybe_device(vka_t *vka, uint32_t size_bits, b
         cap_info->isMinted = false;
         cap_info->minted_from = 0;
         gpi_add_cap_data(cap_info);
-        ZF_LOGE("Adding info for cap: %lu %lx", cap_info->slot, cap_info->paddr);
+        // ZF_LOGE("Adding info for cap: %lu %lx", cap_info->slot, cap_info->paddr);
         free(cap_info);
     }
     return error;

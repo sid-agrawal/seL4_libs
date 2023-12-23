@@ -54,8 +54,21 @@ void vspace_free_sized_stack(vspace_t *vspace, void *stack_top, size_t n_pages)
 void *vspace_new_ipc_buffer(vspace_t *vspace, seL4_CPtr *page)
 {
 
-    void *vaddr = vspace_new_pages(vspace, seL4_AllRights, 1, seL4_PageBits);
-    if (vaddr == NULL) {
+    /* Sid: Add a reservation */
+    void *vaddr = NULL;
+    int error;
+    reservation_t reserve = vspace_reserve_range(vspace, 1 * PAGE_SIZE_4K,
+                                                 seL4_AllRights, 1, &vaddr);
+    if (reserve.res == NULL) {
+        return NULL;
+    }
+    sel4utils_res_t *sel4utils_res = reservation_to_res(reserve);
+    sel4utils_res->type = SEL4UTILS_RES_TYPE_IPC_BUF;
+
+
+    error  = vspace_new_pages_at_vaddr(vspace, vaddr, 1, seL4_PageBits, reserve);
+    if (error) {
+        vspace_free_reservation(vspace, reserve);
         return NULL;
     }
 

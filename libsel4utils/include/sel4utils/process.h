@@ -89,6 +89,10 @@ enum sel4utils_cspace_layout {
 
     /* First free slot in the cspace configured by sel4utils */
     SEL4UTILS_FIRST_FREE = 8
+
+
+
+    /* Below add a list of slots for the OSmosis related CAPs*/
 };
 
 /**

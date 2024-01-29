@@ -82,6 +82,12 @@ struct env {
 
     /* irq handler for test process */
     seL4_CPtr irq_handler;
+    
+    // Added for ramdisk
+    seL4_CPtr ramdisk_endpoint;
+
+    // Added for xv6fs
+    seL4_CPtr xv6fs_endpoint;
 };
 typedef struct env *env_t;
 

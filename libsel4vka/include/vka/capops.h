@@ -42,14 +42,8 @@ static inline int vka_cnode_copy(const cspacepath_t *dest, const cspacepath_t *s
                /* rights */        rights
            );
     if (error == 0)
+    /* XXX if enabled for vmm test, will run out of memory */
     {
-        /* Track osmosis_cap info
-
-    /* Track osmosis_cap info
-
-
-
-    */
         /* (XXX creating a memory leak here)*/
         osmosis_cap_t *cap_info = malloc(sizeof(osmosis_cap_t));
         assert(cap_info != NULL);

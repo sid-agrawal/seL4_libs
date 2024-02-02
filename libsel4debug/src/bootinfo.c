@@ -55,10 +55,10 @@ void debug_print_bootinfo(seL4_BootInfo *info)
         sizes[index]++;
         size_t size = 1ULL << info->untypedList[i].sizeBits;
         total_memory += size;
-        // printf("%p | %zu | %s | %d\n", (void *)info->untypedList[i].paddr,
-        //        (size_t)info->untypedList[i].sizeBits,
-        //        human_readable_size(1ULL<<info->untypedList[i].sizeBits),
-        //        (int)info->untypedList[i].isDevice);
+        printf("%p | %zu | %s | %d\n", (void *)info->untypedList[i].paddr,
+               (size_t)info->untypedList[i].sizeBits,
+               human_readable_size(1ULL<<info->untypedList[i].sizeBits),
+               (int)info->untypedList[i].isDevice);
     }
 
     // printf("Untyped summary added: %s\n", human_readable_size(total_memory));

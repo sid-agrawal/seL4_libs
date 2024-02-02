@@ -79,6 +79,9 @@ struct env {
     seL4_CPtr self_cpu_cptr;
     seL4_CPtr self_pd_cptr;
     seL4_CPtr gpi_endpoint;
+
+    /* irq handler for test process */
+    seL4_CPtr irq_handler;
 };
 typedef struct env *env_t;
 

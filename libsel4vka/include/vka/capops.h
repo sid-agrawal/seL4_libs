@@ -46,6 +46,7 @@ static inline int vka_cnode_copy(const cspacepath_t *dest, const cspacepath_t *s
     {
         /* Track osmosis_cap info */
         /* (XXX creating a memory leak here)*/
+        /* Track osmosis_cap info */
         osmosis_cap_t *cap_info = malloc(sizeof(osmosis_cap_t));
         assert(cap_info != NULL);
         cap_info->slot_in_rt = dest->capPtr;

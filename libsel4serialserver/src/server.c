@@ -252,17 +252,17 @@ seL4_Error serial_server_func_connect(seL4_MessageInfo_t tag,
          * send the value of shmem_max_size in SSMSGREG_RESPONSE
          * so it can try again.
          */
-        ZF_LOGW(SERSERVS"connect: New client badge %x is asking to establish "
-                "shmem mapping of %dB, but server max accepted shmem size is "
-                "%dB.",
+        ZF_LOGW(SERSERVS"connect: New client badge %lx is asking to establish "
+                "shmem mapping of %lxB, but server max accepted shmem size is "
+                "%lxB.",
                 client_badge_value, client_shmem_size,
                 get_serial_server()->shmem_max_size);
         return (seL4_Error) SERIAL_SERVER_ERROR_SHMEM_TOO_LARGE;
     }
 
     if (seL4_MessageInfo_get_extraCaps(tag) != client_shmem_n_pages) {
-        ZF_LOGW(SERSERVS"connect: Received %d Frame caps from client "
-                "badge %x.\n\tbut client requested shmem mapping of %d "
+        ZF_LOGW(SERSERVS"connect: Received %lx Frame caps from client "
+                "badge %lx.\n\tbut client requested shmem mapping of %lu "
                 "frames. Possible cap transfer error.",
                 seL4_MessageInfo_get_extraCaps(tag), client_badge_value,
                 client_shmem_n_pages);
@@ -302,7 +302,7 @@ seL4_Error serial_server_func_connect(seL4_MessageInfo_t tag,
         }
 
         client_frame_caps[i] = client_frame_cspath_tmp.capPtr;
-        ZF_LOGD("connect: moved received client Frame cap %d from recv slot %"PRIxPTR" to slot %"PRIxPTR".",
+        ZF_LOGD("connect: moved received client Frame cap %lx from recv slot %"PRIxPTR" to slot %"PRIxPTR".",
                 i + 1, get_serial_server()->frame_cap_recv_cspaths[i].capPtr,
                 client_frame_caps[i]);
     }
@@ -322,7 +322,7 @@ seL4_Error serial_server_func_connect(seL4_MessageInfo_t tag,
     serial_server_registry_insert(client_badge_value, shmem_tmp,
                                   client_frame_caps, client_shmem_size);
 
-    ZF_LOGI(SERSERVS"connect: New client: badge %x, shmem %p, %d pages.",
+    ZF_LOGI(SERSERVS"connect: New client: badge %lx, shmem %p, %d pages.",
             client_badge_value, shmem_tmp, client_shmem_n_pages);
 
     return seL4_NoError;
@@ -483,7 +483,7 @@ void serial_server_main(void)
         serial_server_set_frame_recv_path();
 
         tag = recv(&sender_badge);
-        ZF_LOGD(SERSERVS "main: Got message from %x", sender_badge);
+        ZF_LOGD(SERSERVS "main: Got message from %lx", sender_badge);
 
         func = seL4_GetMR(SSMSGREG_FUNC);
 
@@ -496,7 +496,7 @@ void serial_server_main(void)
             client_data = serial_server_registry_get_entry_by_badge(sender_badge);
             if (client_data == NULL) {
                 ZF_LOGW(SERSERVS"main: Got message from unregistered client "
-                        "badge %x. Ignoring.",
+                        "badge %lx. Ignoring.",
                         sender_badge);
                 continue;
             }
@@ -504,7 +504,7 @@ void serial_server_main(void)
 
         switch (func) {
         case FUNC_CONNECT_REQ:
-            ZF_LOGD(SERSERVS"main: Got connect request from client badge %x.",
+            ZF_LOGD(SERSERVS"main: Got connect request from client badge %lx.",
                     sender_badge);
             error = serial_server_func_connect(tag,
                                                sender_badge,
@@ -536,7 +536,7 @@ void serial_server_main(void)
              * to encode both types of values.
              */
 
-            ZF_LOGD(SERSERVS"main: Got write request from client badge %x.",
+            ZF_LOGD(SERSERVS"main: Got write request from client badge %lx.",
                     sender_badge);
             buff_len = seL4_GetMR(SSMSGREG_WRITE_REQ_BUFF_LEN);
             error = serial_server_func_write(client_data, buff_len,
@@ -549,7 +549,7 @@ void serial_server_main(void)
             break;
 
         case FUNC_DISCONNECT_REQ:
-            ZF_LOGD(SERSERVS"main: Got disconnect request from client badge %x.",
+            ZF_LOGD(SERSERVS"main: Got disconnect request from client badge %lx.",
                     sender_badge);
             serial_server_func_disconnect(client_data);
 
@@ -559,7 +559,7 @@ void serial_server_main(void)
             break;
 
         case FUNC_KILL_REQ:
-            ZF_LOGI(SERSERVS"main: Got KILL request from client badge %x.",
+            ZF_LOGI(SERSERVS"main: Got KILL request from client badge %lx.",
                     sender_badge);
             /* The actual contents of the Reply don't matter here. */
             seL4_SetMR(SSMSGREG_FUNC, FUNC_KILL_ACK);

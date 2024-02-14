@@ -11,6 +11,7 @@
 
 /* --- Debug --- */
 
+#define DEBUG
 #ifdef DEBUG
 #include <stdio.h>
 #define CSPACEPATHPRINT     printf

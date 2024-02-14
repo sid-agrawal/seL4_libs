@@ -439,7 +439,7 @@ void sel4utils_unmap_pages(vspace_t *vspace, void *vaddr, size_t num_pages, size
     sel4utils_res_t *reserve = find_reserve(data, v);
 
     if (!sel4_valid_size_bits(size_bits)) {
-        ZF_LOGE("Invalid size_bits %zu", size_bits);
+        ZF_LOGF("Invalid size_bits %zu", size_bits);
         return;
     }
 
@@ -449,12 +449,13 @@ void sel4utils_unmap_pages(vspace_t *vspace, void *vaddr, size_t num_pages, size
 
     for (int i = 0; i < num_pages; i++) {
         seL4_CPtr cap = get_cap(data->top_level, v);
+        // printf("%s: %d: cap: %ld\n", __func__, __LINE__, (seL4_Word) cap);
 
         /* unmap */
         if (cap != 0) {
             int error = seL4_ARCH_Page_Unmap(cap);
             if (error != seL4_NoError) {
-                ZF_LOGE("Failed to unmap page at vaddr %p", vaddr);
+                ZF_LOGF("Failed to unmap page at vaddr %p", vaddr);
             }
         }
 
@@ -545,14 +546,20 @@ int sel4utils_reserve_range_no_alloc_aligned(vspace_t *vspace, sel4utils_res_t *
     sel4utils_alloc_data_t *data = get_alloc_data(vspace);
     void *vaddr = find_range(data, BYTES_TO_SIZE_BITS_PAGES(size, size_bits), size_bits);
 
+    // printf("%s: %d vaddr: %p\n", __func__, __LINE__, vaddr);
     if (vaddr == NULL) {
         return -1;
     }
 
+    // printf("%s: %d\n", __func__, __LINE__);
     *result = vaddr;
+    // printf("%s: %d\n", __func__, __LINE__);
     reservation->malloced = 0;
+    // printf("%s: %d\n", __func__, __LINE__);
     reservation->rights_deferred = false;
+    // printf("%s: %d\n", __func__, __LINE__);
     perform_reservation(vspace, reservation, (uintptr_t) vaddr, size, rights, cacheable);
+    // printf("%s: %d\n", __func__, __LINE__);
     return 0;
 }
 
@@ -581,6 +588,7 @@ reservation_t sel4utils_reserve_range_aligned(vspace_t *vspace, size_t bytes, si
         ZF_LOGE("Malloc failed");
         return reservation;
     }
+    res->mo_ref = NULL;
 
     reservation.res = res;
 
@@ -613,11 +621,11 @@ reservation_t sel4utils_reserve_range_at(vspace_t *vspace, void *vaddr, size_t s
 {
     reservation_t reservation;
     reservation.res = malloc(sizeof(sel4utils_res_t));
-
     if (reservation.res == NULL) {
         ZF_LOGE("Malloc failed");
         return reservation;
     }
+    ((sel4utils_res_t *) reservation.res)->mo_ref = NULL;
 
     int error = sel4utils_reserve_range_at_no_alloc(vspace, reservation.res, vaddr, size, rights, cacheable);
 
@@ -892,6 +900,194 @@ int sel4utils_share_mem_at_vaddr(vspace_t *from, vspace_t *to, void *start, int 
     }
 
     return error;
+}
+
+uint64_t total_bytes_allocated = 0;
+
+int sel4utils_copy_mem_at_vaddr(
+    vspace_t *loader,
+    vspace_t *from,
+    vspace_t *to,
+    void *start,
+    int num_pages,
+    size_t size_bits,
+    void *vaddr,
+    reservation_t reservation)
+{
+    int error = 0; /* no error */
+    sel4utils_alloc_data_t *loader_data = get_alloc_data(loader);
+    sel4utils_alloc_data_t *from_data = get_alloc_data(from);
+    sel4utils_alloc_data_t *to_data = get_alloc_data(to);
+    int page;
+    sel4utils_res_t *res = reservation_to_res(reservation);
+
+    if (!sel4_valid_size_bits(size_bits))
+    {
+        ZF_LOGE("Invalid size bits %zu", size_bits);
+        return -1;
+    }
+
+    /* go through, page by page, copy the page content into the to cspace and
+     * map it into the to vspace */
+
+    size_t size_bytes = 1 << size_bits;
+    for (page = 0; page < num_pages; page++)
+    {
+        uintptr_t from_vaddr = (uintptr_t)start + page * size_bytes;
+        uintptr_t to_vaddr = (uintptr_t)vaddr + (uintptr_t)page * size_bytes;
+
+        /* get the frame cap to be copied */
+        seL4_CPtr from_cap = sel4utils_get_cap(from, (void *)from_vaddr);
+        if (from_cap == seL4_CapNull)
+        {
+            ZF_LOGE("Cap not present in from vspace to copy, vaddr %lx\n", from_vaddr);
+            error = -1;
+            continue;
+        }
+
+
+        /* Allocate a new frame */
+        vka_object_t new_frame;
+        bool can_use_dev = false;
+        if (vka_alloc_frame_maybe_device(from_data->vka, size_bits, can_use_dev, &new_frame) != 0)
+        {
+            /* abort! */
+            ZF_LOGF("Failed to allocate page");
+            error = seL4_NotEnoughMemory;
+            break;
+        }
+        total_bytes_allocated += 1 << size_bits;
+        printf("\t\t %s: Allocated Byte %s\n Total: %s", __func__,
+        human_readable_size(1 << size_bits),
+        human_readable_size(total_bytes_allocated));
+        // tuck away a copy
+        /* create a path to the cap */
+
+        error = sel4utils_copy_page_contents(loader, loader_data->vka, from_cap,
+                                                 new_frame.cptr, size_bytes,size_bits);
+        if (error)
+        {
+            ZF_LOGF("Failed to copy page contents\n"    );
+            break;
+        }
+
+
+        /* now finally map the page */
+        error = map_page(to, new_frame.cptr, (void *)to_vaddr, res->rights, res->cacheable, size_bits);
+        if (error)
+        {
+            ZF_LOGF("Failed to map page into target vspace at vaddr %" PRIuPTR, to_vaddr);
+            break;
+        }
+
+        update_entries(to, to_vaddr, new_frame.cptr, size_bits, 0);
+    }
+
+    if (error)
+    {
+        /* we didn't finish, undo any pages we did map */
+        vspace_unmap_pages(to, vaddr, page, size_bits, VSPACE_FREE);
+    }
+
+    return error;
+}
+
+int sel4utils_copy_page_contents(vspace_t *loader,
+                                 vka_t *vka,
+                                 seL4_CPtr src_frame_cap,
+                                 seL4_CPtr dst_frame_cap,
+                                 size_t size_bytes,
+                                 size_t size_bits)
+{
+    /* create a copy of the src cap */
+    cspacepath_t src_path_from, src_path_to;
+    vka_cspace_make_path(vka, src_frame_cap, &src_path_from);
+    vka_cspace_alloc_path(vka, &src_path_to);
+    int error = vka_cnode_copy(&src_path_to, &src_path_from, seL4_AllRights);
+    if (error)
+    {
+        ZF_LOGE("Failed to copy src cap, error %d\n", error);
+        return error;
+    }
+
+    /* create a copy of the dst cap */
+    cspacepath_t dst_path_from, dst_path_to;
+    vka_cspace_make_path(vka, dst_frame_cap, &dst_path_from);
+    vka_cspace_alloc_path(vka, &dst_path_to);
+    error = vka_cnode_copy(&dst_path_to, &dst_path_from, seL4_AllRights);
+    if (error)
+    {
+        ZF_LOGE("Failed to copy dst cap, error %d\n", error);
+        return error;
+    }
+
+    /* Reserve a range of VA for the src frame in loader VA space */
+    void *src_vaddr_tmp;
+    sel4utils_res_t src_res_tmp;
+    error = sel4utils_reserve_range_no_alloc_aligned(loader,
+                                                     &src_res_tmp,
+                                                     size_bytes,
+                                                     size_bits,
+                                                     seL4_AllRights,
+                                                     1, /*cacheable*/
+                                                     &src_vaddr_tmp);
+    if (error)
+    {
+        ZF_LOGF("Failed to reserve range for src frame");
+        return error;
+    }
+
+    /* Reserve a range of VA for the dst frame in loader VA space */
+    void *dst_vaddr_tmp;
+    sel4utils_res_t dst_res_tmp;
+    error = sel4utils_reserve_range_no_alloc_aligned(loader,
+                                                     &dst_res_tmp,
+                                                     size_bytes,
+                                                     size_bits,
+                                                     seL4_AllRights,
+                                                     1, /*cacheable*/
+                                                     &dst_vaddr_tmp);
+    if (error)
+    {
+        ZF_LOGF("Failed to reserve range for src frame");
+        return error;
+    }
+
+    /* Map src frame to from_vspace at src_vaddr_tmp */
+    error = map_page(loader, src_path_to.capPtr, (void *)src_vaddr_tmp,
+                     seL4_AllRights, true, size_bits);
+    if (error)
+    {
+        ZF_LOGF("Failed to map the src page into loader vspace at vaddr %p\n", src_vaddr_tmp);
+        return error;
+    }
+    update_entries(loader, (uintptr_t)src_vaddr_tmp, src_path_to.capPtr, size_bits, 0);
+
+    /* Map dst frame to from_vspace at dst_vaddr_tmp */
+    error = map_page(loader, dst_path_to.capPtr, (void *)dst_vaddr_tmp,
+                     seL4_AllRights, true, size_bits);
+    if (error)
+    {
+        ZF_LOGF("Failed to map the dst page into loader vspace at vaddr %p\n", dst_vaddr_tmp);
+        return error;
+    }
+    update_entries(loader, (uintptr_t)dst_vaddr_tmp, dst_path_to.capPtr, size_bits, 0);
+
+
+    /* memcpy 4k of data from from_vaddr to tmp_vaddr */
+    memcpy(dst_vaddr_tmp, (void *)src_vaddr_tmp, size_bytes);
+
+
+    /* Very IMP: UnMap from from_vspace */
+    sel4utils_unmap_pages(loader, src_vaddr_tmp, 1, size_bits, VSPACE_FREE);
+    sel4utils_unmap_pages(loader, dst_vaddr_tmp, 1, size_bits, VSPACE_FREE);
+
+    /* I think unmap will do this too.*/
+    /* Free the reservation for the src page */
+    /* Free the reservation for the dst page */
+
+    /* Free the caps of the src and the dest caps*/
+    return 0;
 }
 
 uintptr_t sel4utils_get_paddr(vspace_t *vspace, void *vaddr, seL4_Word type, seL4_Word size_bits)

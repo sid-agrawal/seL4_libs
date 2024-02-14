@@ -149,6 +149,32 @@ int sel4utils_spawn_process_v(sel4utils_process_t *process, vka_t *vka, vspace_t
                               int argc, char *argv[], int resume);
 
 /**
+ * Start a process, and copy arguments into the processes address space.
+ * OSM variant
+ *
+ * This is intended for use when loading applications that have a System V ABI compliant
+ * entry point. This means that the entry point should *not* be a 'main' that is expecting
+ * argc and argv in the form as passed here, but should be an _start routine that will
+ * take a stack frame with the arguments on it and construct an appropriate invocation
+ * to a main function. The stack frame passed to the entry point will have an auxv, envp
+ * and argv
+ *
+ * @param process initialised sel4utils process struct.
+ * @param ads_cap ads_cap in child
+ * @param vka     vka interface to use for allocation of frames.
+ * @param vspace  the current vspace.
+ * @param argc    the number of arguments.
+ * @param argv    a pointer to an array of strings in the current vspace.
+ * @param resume  1 to start the process, 0 to leave suspended.
+ *
+ * @return -1 on error, 0 on success.
+ *
+ */
+int sel4utils_osm_spawn_process_v(sel4utils_process_t *process, seL4_CPtr *osm_caps,
+                              vka_t *vka, vspace_t *vspace,
+                              int argc, char *argv[], int resume);
+
+/**
  * This is the function to use if you just want to set up a process as fast as possible.
  * It creates a simple cspace and vspace for you, allocates a fault endpoint and puts
  * it into the new cspace. The process will start at priority 0.
@@ -191,6 +217,12 @@ int sel4utils_configure_process(sel4utils_process_t *process, vka_t *vka, vspace
 int sel4utils_configure_process_custom(sel4utils_process_t *process, vka_t *target_vka,
                                        vspace_t *spawner_vspace, sel4utils_process_config_t config);
 
+int sel4utils_osm_configure_process_custom(sel4utils_process_t *process,
+                                           vka_t *target_vka,
+                                           vspace_t *spawner_vspace,
+                                           vspace_t *target_vspace,
+                                           vka_object_t *target_vspace_root_page_dir,
+                                           sel4utils_process_config_t config);
 /**
  * Copy a cap into a process' cspace.
  *

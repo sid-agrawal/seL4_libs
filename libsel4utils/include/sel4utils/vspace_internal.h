@@ -450,4 +450,18 @@ void sel4utils_free_reservation_by_vaddr(vspace_t *vspace, void *vaddr);
 void sel4utils_tear_down(vspace_t *vspace, vka_t *vka);
 int sel4utils_share_mem_at_vaddr(vspace_t *from, vspace_t *to, void *start, int num_pages,
                                  size_t size_bits, void *vaddr, reservation_t reservation);
+int sel4utils_copy_mem_at_vaddr(
+    vspace_t *loader,
+    vspace_t *from,
+    vspace_t *to, void *start,
+    int num_pages,
+    size_t size_bits,
+    void *vaddr,
+    reservation_t reservation);
 
+int sel4utils_copy_page_contents(vspace_t *loader,
+                                 vka_t *vka,
+                                 seL4_CPtr src_frame_cap,
+                                 seL4_CPtr dst_frame_cap,
+                                 size_t size_bytes,
+                                 size_t size_bits);

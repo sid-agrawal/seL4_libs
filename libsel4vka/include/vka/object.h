@@ -214,7 +214,7 @@ static inline int vka_alloc_frame(vka_t *vka, uint32_t size_bits, vka_object_t *
         /* (XXX creating a memory leak here)*/
         osmosis_cap_t *cap_info = malloc(sizeof(osmosis_cap_t));
         assert(cap_info != NULL);
-        cap_info->slot = result->cptr;
+        cap_info->slot_in_rt = result->cptr;
         cap_info->type = kobject_get_type(KOBJECT_FRAME, size_bits);
         cap_info->isUntyped = false;
         cap_info->paddr = vka_object_paddr(vka, result);
@@ -247,7 +247,7 @@ static inline int vka_alloc_frame_maybe_device(vka_t *vka, uint32_t size_bits, b
         /* (XXX creating a memory leak here)*/
         osmosis_cap_t *cap_info = malloc(sizeof(osmosis_cap_t));
         assert(cap_info != NULL);
-        cap_info->slot = result->cptr;
+        cap_info->slot_in_rt = result->cptr;
         cap_info->type = kobject_get_type(KOBJECT_FRAME, size_bits);
         cap_info->isUntyped = false;
         cap_info->paddr = vka_object_paddr(vka, result);

@@ -50,10 +50,9 @@ static inline int vka_cnode_copy(const cspacepath_t *dest, const cspacepath_t *s
 
 
     */
-        /* (XXX creating a memory leak here)*/
         osmosis_cap_t *cap_info = malloc(sizeof(osmosis_cap_t));
         assert(cap_info != NULL);
-        cap_info->slot = dest->capPtr;
+        cap_info->slot_in_rt = dest->capPtr;
 
         cap_info->isMinted = true;
         cap_info->minted_from = src->capPtr;

@@ -95,6 +95,7 @@ struct sel4utils_res {
     int malloced; // It is about the memory for this node.
     bool rights_deferred;
     sel4utils_reservation_type_t type;
+    void *mo_ref;
     struct sel4utils_res *next;
 };
 typedef struct sel4utils_res sel4utils_res_t;

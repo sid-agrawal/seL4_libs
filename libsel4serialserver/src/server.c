@@ -322,7 +322,7 @@ seL4_Error serial_server_func_connect(seL4_MessageInfo_t tag,
     serial_server_registry_insert(client_badge_value, shmem_tmp,
                                   client_frame_caps, client_shmem_size);
 
-    ZF_LOGI(SERSERVS"connect: New client: badge %lx, shmem %p, %d pages.",
+    ZF_LOGI(SERSERVS"connect: New client: badge %lx, shmem %p, %ld pages.",
             client_badge_value, shmem_tmp, client_shmem_n_pages);
 
     return seL4_NoError;

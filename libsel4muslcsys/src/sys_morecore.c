@@ -27,15 +27,16 @@
 /*
  * Statically allocated morecore area.
  *
- * This is rather terrible, but is the simplest option without a
- * huge amount of infrastructure.
+ * To have a statically allocated morecore area, define morecore_area and morecore_size in your
+ * application. The morecore_area should be aligned to a page boundary and morecore_size should be
+ * the size of the area in bytes.
  */
-char __attribute__((aligned(PAGE_SIZE_4K))) morecore_area[CONFIG_LIB_SEL4_MUSLC_SYS_MORECORE_BYTES];
 
-size_t morecore_size = CONFIG_LIB_SEL4_MUSLC_SYS_MORECORE_BYTES;
+extern char morecore_area[];
+extern size_t morecore_size;
+extern uintptr_t morecore_top;
 /* Pointer to free space in the morecore area. */
 static uintptr_t morecore_base = (uintptr_t) &morecore_area;
-uintptr_t morecore_top = (uintptr_t) &morecore_area[CONFIG_LIB_SEL4_MUSLC_SYS_MORECORE_BYTES];
 
 /* Actual morecore implementation
    returns 0 if failure, returns newbrk if success.

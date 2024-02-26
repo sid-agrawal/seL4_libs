@@ -204,13 +204,7 @@ static inline int vka_alloc_frame(vka_t *vka, uint32_t size_bits, vka_object_t *
     int error =  vka_alloc_object(vka, kobject_get_type(KOBJECT_FRAME, size_bits), size_bits, result);
     if (error == 0)
     {
-        /* Track osmosis_cap info
-
-    /* Track osmosis_cap info
-
-
-
-    */
+        /* Track osmosis_cap info*/
         /* (XXX creating a memory leak here)*/
         osmosis_cap_t *cap_info = malloc(sizeof(osmosis_cap_t));
         assert(cap_info != NULL);
@@ -222,7 +216,7 @@ static inline int vka_alloc_frame(vka_t *vka, uint32_t size_bits, vka_object_t *
         cap_info->isMinted = false;
         cap_info->minted_from = 0;
 
-        // gpi_add_cap_data(cap_info);
+        gpi_add_cap_data(cap_info);
         // ZF_LOGE("Adding info for cap: %lu %lx", cap_info->slot, cap_info->paddr);
         free(cap_info);
     }
@@ -237,13 +231,7 @@ static inline int vka_alloc_frame_maybe_device(vka_t *vka, uint32_t size_bits, b
                                          size_bits, VKA_NO_PADDR, can_use_dev, result);
     if (error == 0)
     {
-        /* Track osmosis_cap info
-
-    /* Track osmosis_cap info
-
-
-
-    */
+        /* Track osmosis_cap info */
         /* (XXX creating a memory leak here)*/
         osmosis_cap_t *cap_info = malloc(sizeof(osmosis_cap_t));
         assert(cap_info != NULL);
@@ -254,7 +242,7 @@ static inline int vka_alloc_frame_maybe_device(vka_t *vka, uint32_t size_bits, b
 
         cap_info->isMinted = false;
         cap_info->minted_from = 0;
-        // gpi_add_cap_data(cap_info);
+        gpi_add_cap_data(cap_info);
         // ZF_LOGE("Adding info for cap: %lu %lx", cap_info->slot, cap_info->paddr);
         free(cap_info);
     }

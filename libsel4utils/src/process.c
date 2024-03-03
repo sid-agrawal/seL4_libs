@@ -294,8 +294,8 @@ int sel4utils_osm_spawn_process_v(sel4utils_process_t *process,
     at_phdr = initial_stack_pointer;
 
     /* initialize of aux vectors */
-    int auxc = 9;
-    Elf_auxv_t auxv[10];
+    int auxc = 8;
+    Elf_auxv_t auxv[9];
     auxv[0].a_type = AT_PAGESZ;
     auxv[0].a_un.a_val = process->pagesz;
     auxv[1].a_type = AT_PHDR;
@@ -315,12 +315,9 @@ int sel4utils_osm_spawn_process_v(sel4utils_process_t *process,
     auxv[7].a_type = AT_OSM_RDE_CAP;
     auxv[7].a_un.a_val = (uintptr_t)  osm_caps[1];
 
-    auxv[8].a_type = AT_OSM_PD_CAP;
-    auxv[8].a_un.a_val = (uintptr_t)  osm_caps[2];
-
     if (process->sysinfo) {
-        auxv[9].a_type = AT_SYSINFO;
-        auxv[9].a_un.a_val = process->sysinfo;
+        auxv[8].a_type = AT_SYSINFO;
+        auxv[8].a_un.a_val = process->sysinfo;
         auxc++;
     }
 

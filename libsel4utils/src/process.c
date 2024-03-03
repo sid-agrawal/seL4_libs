@@ -312,7 +312,7 @@ int sel4utils_osm_spawn_process_v(sel4utils_process_t *process,
     auxv[6].a_type = AT_OSM_ADS_CAP;
     auxv[6].a_un.a_val = (uintptr_t)  osm_caps[0];
 
-    auxv[7].a_type = AT_OSM_GPI_CAP;
+    auxv[7].a_type = AT_OSM_RDE_CAP;
     auxv[7].a_un.a_val = (uintptr_t)  osm_caps[1];
 
     auxv[8].a_type = AT_OSM_PD_CAP;

@@ -41,22 +41,21 @@ static inline int vka_cnode_copy(const cspacepath_t *dest, const cspacepath_t *s
                /* src_depth */     src->capDepth,
                /* rights */        rights
            );
-    if (error == 0)
-    /* XXX if enabled for vmm test, will run out of memory */
-    {
-        /* Track osmosis_cap info */
-        /* (XXX creating a memory leak here)*/
-        /* Track osmosis_cap info */
-        osmosis_cap_t *cap_info = malloc(sizeof(osmosis_cap_t));
-        assert(cap_info != NULL);
-        cap_info->slot_in_rt = dest->capPtr;
+    // if (error == 0)
+    // {
+    //     /* Track osmosis_cap info */
+    //     /* (XXX creating a memory leak here)*/
+    //     /* Track osmosis_cap info */
+    //     osmosis_cap_t *cap_info = malloc(sizeof(osmosis_cap_t));
+    //     assert(cap_info != NULL);
+    //     cap_info->slot_in_rt = dest->capPtr;
 
-        cap_info->isMinted = true;
-        cap_info->minted_from = src->capPtr;
-        gpi_add_cap_data(cap_info);
-        // ZF_LOGE("[MINT] Adding info for cap: %lu %lu", cap_info->slot, cap_info->minted_from);
-        free(cap_info);
-    }
+    //     cap_info->isMinted = true;
+    //     cap_info->minted_from = src->capPtr;
+    //     gpi_add_cap_data(cap_info);
+    //     // ZF_LOGE("[MINT] Adding info for cap: %lu %lu", cap_info->slot, cap_info->minted_from);
+    //     free(cap_info);
+    // }
     return error;
 }
 

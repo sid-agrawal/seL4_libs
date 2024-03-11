@@ -160,7 +160,7 @@ int sel4utils_spawn_process_v(sel4utils_process_t *process, vka_t *vka, vspace_t
  * and argv
  *
  * @param process initialised sel4utils process struct.
- * @param ads_cap ads_cap in child
+ * @param osm_init_data location of osmosis init data in the process
  * @param vka     vka interface to use for allocation of frames.
  * @param vspace  the current vspace.
  * @param argc    the number of arguments.
@@ -170,9 +170,13 @@ int sel4utils_spawn_process_v(sel4utils_process_t *process, vka_t *vka, vspace_t
  * @return -1 on error, 0 on success.
  *
  */
-int sel4utils_osm_spawn_process_v(sel4utils_process_t *process, seL4_CPtr *osm_caps,
-                              vka_t *vka, vspace_t *vspace,
-                              int argc, char *argv[], int resume);
+int sel4utils_osm_spawn_process_v(sel4utils_process_t *process,
+                                  void *osm_init_data,
+                                  vka_t *vka,
+                                  vspace_t *vspace,
+                                  int argc,
+                                  char *argv[],
+                                  int resume);
 
 /**
  * This is the function to use if you just want to set up a process as fast as possible.

@@ -267,7 +267,7 @@ int sel4utils_spawn_process(sel4utils_process_t *process, vka_t *vka, vspace_t *
 }
 
 int sel4utils_osm_spawn_process_v(sel4utils_process_t *process,
-                                  seL4_CPtr *osm_caps,
+                                  void *osm_init_data,
                                   vka_t *vka,
                                   vspace_t *vspace,
                                   int argc,
@@ -294,8 +294,8 @@ int sel4utils_osm_spawn_process_v(sel4utils_process_t *process,
     at_phdr = initial_stack_pointer;
 
     /* initialize of aux vectors */
-    int auxc = 8;
-    Elf_auxv_t auxv[9];
+    int auxc = 7;
+    Elf_auxv_t auxv[8];
     auxv[0].a_type = AT_PAGESZ;
     auxv[0].a_un.a_val = process->pagesz;
     auxv[1].a_type = AT_PHDR;
@@ -309,15 +309,12 @@ int sel4utils_osm_spawn_process_v(sel4utils_process_t *process,
     auxv[5].a_type = AT_SEL4_TCB;
     auxv[5].a_un.a_val = process->dest_tcb_cptr;
 
-    auxv[6].a_type = AT_OSM_ADS_CAP;
-    auxv[6].a_un.a_val = (uintptr_t)  osm_caps[0];
-
-    auxv[7].a_type = AT_OSM_RDE_CAP;
-    auxv[7].a_un.a_val = (uintptr_t)  osm_caps[1];
+    auxv[6].a_type = AT_OSM_INIT_DATA;
+    auxv[6].a_un.a_val = (uint64_t) osm_init_data;
 
     if (process->sysinfo) {
-        auxv[8].a_type = AT_SYSINFO;
-        auxv[8].a_un.a_val = process->sysinfo;
+        auxv[7].a_type = AT_SYSINFO;
+        auxv[7].a_un.a_val = process->sysinfo;
         auxc++;
     }
 

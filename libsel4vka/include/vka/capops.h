@@ -31,31 +31,14 @@ static inline int vka_cnode_saveCaller(const cspacepath_t *src)
 static inline int vka_cnode_copy(const cspacepath_t *dest, const cspacepath_t *src, seL4_CapRights_t rights)
 {
 
-
     int error = seL4_CNode_Copy(
-               /* _service */      dest->root,
-               /* dest_index */    dest->capPtr,
-               /* destDepth */    dest->capDepth,
-               /* src_root */      src->root,
-               /* src_index */     src->capPtr,
-               /* src_depth */     src->capDepth,
-               /* rights */        rights
-           );
-    // if (error == 0)
-    // {
-    //     /* Track osmosis_cap info */
-    //     /* (XXX creating a memory leak here)*/
-    //     /* Track osmosis_cap info */
-    //     osmosis_cap_t *cap_info = malloc(sizeof(osmosis_cap_t));
-    //     assert(cap_info != NULL);
-    //     cap_info->slot_in_rt = dest->capPtr;
-
-    //     cap_info->isMinted = true;
-    //     cap_info->minted_from = src->capPtr;
-    //     gpi_add_cap_data(cap_info);
-    //     // ZF_LOGE("[MINT] Adding info for cap: %lu %lu", cap_info->slot, cap_info->minted_from);
-    //     free(cap_info);
-    // }
+        /* _service */ dest->root,
+        /* dest_index */ dest->capPtr,
+        /* destDepth */ dest->capDepth,
+        /* src_root */ src->root,
+        /* src_index */ src->capPtr,
+        /* src_depth */ src->capDepth,
+        /* rights */ rights);
     return error;
 }
 

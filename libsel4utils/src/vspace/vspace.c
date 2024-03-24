@@ -957,9 +957,9 @@ int sel4utils_copy_mem_at_vaddr(
             break;
         }
         total_bytes_allocated += 1 << size_bits;
-        printf("\t\t %s: Allocated Byte %s\n Total: %s", __func__,
-        human_readable_size(1 << size_bits),
-        human_readable_size(total_bytes_allocated));
+        // printf("\t\t %s: Allocated Byte %s\n Total: %s", __func__,
+        // human_readable_size(1 << size_bits),
+        // human_readable_size(total_bytes_allocated));
         // tuck away a copy
         /* create a path to the cap */
 

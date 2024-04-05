@@ -53,7 +53,7 @@ static inline int vka_cnode_copy(const cspacepath_t *dest, const cspacepath_t *s
 
         cap_info->isMinted = true;
         cap_info->minted_from = src->capPtr;
-        gpi_add_cap_data(cap_info);
+        //gpi_add_cap_data(cap_info);
         // ZF_LOGE("[MINT] Adding info for cap: %lu %lu", cap_info->slot, cap_info->minted_from);
         free(cap_info);
     }

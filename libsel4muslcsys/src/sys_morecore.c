@@ -32,11 +32,11 @@
  * the size of the area in bytes.
  */
 
-extern char morecore_area[];
+extern char *morecore_area;
 extern size_t morecore_size;
 extern uintptr_t morecore_top;
 /* Pointer to free space in the morecore area. */
-static uintptr_t morecore_base = (uintptr_t) &morecore_area;
+extern uintptr_t morecore_base;
 
 /* Actual morecore implementation
    returns 0 if failure, returns newbrk if success.
@@ -140,7 +140,6 @@ static long sys_brk_static(va_list ap)
 
 static long sys_brk_dynamic(va_list ap)
 {
-
     uintptr_t ret;
     uintptr_t newbrk = va_arg(ap, uintptr_t);
     if (!muslc_this_vspace || !muslc_brk_reservation.res || !muslc_brk_reservation_start) {

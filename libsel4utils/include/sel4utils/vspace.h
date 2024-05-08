@@ -55,13 +55,16 @@ typedef struct vspace_bottom_level {
 typedef int(*sel4utils_map_page_fn)(vspace_t *vspace, seL4_CPtr cap, void *vaddr, seL4_CapRights_t rights,
                                     int cacheable, size_t size_bits);
 
-enum sel4utils_reservation_type {
+enum sel4utils_reservation_type
+{
     SEL4UTILS_RES_TYPE_ELF = 1, /* This came from ELF loading and we not distinguishing code/data from the elf for now.*/
     SEL4UTILS_RES_TYPE_STACK,
     SEL4UTILS_RES_TYPE_IPC_BUF,
     SEL4UTILS_RES_TYPE_HEAP,
     SEL4UTILS_RES_TYPE_SHARED_FRAMES,
+    SEL4UTILS_RES_TYPE_GENERIC, /* for any generic frame, used for any purpose */
     SEL4UTILS_RES_TYPE_OTHER,
+    SEL4UTILS_RES_TYPE_MAX
 };
 typedef enum sel4utils_reservation_type sel4utils_reservation_type_t;
 
@@ -80,6 +83,8 @@ static inline char * human_readable_va_res_type(sel4utils_reservation_type_t typ
             return "SHARED_FRAMES";
         case SEL4UTILS_RES_TYPE_OTHER:
             return "OTHER";
+        case SEL4UTILS_RES_TYPE_GENERIC:
+            return "GENERIC";
         default:
             return "UNKNOWN";
     }
@@ -385,6 +390,6 @@ uintptr_t sel4utils_get_paddr(vspace_t *vspace, void *vaddr, seL4_Word type, seL
 
 
 // Sid'd new def.
-int sel4utils_walk_vspace(vspace_t *vspace, vka_t *vka);
+int sel4utils_walk_vspace(vspace_t *vspace);
 int sel4utils_copy_vspace(vspace_t *loader,
     vspace_t *from, vspace_t *to, vka_t *vka);

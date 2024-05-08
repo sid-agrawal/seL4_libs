@@ -1097,7 +1097,7 @@ uintptr_t sel4utils_get_paddr(vspace_t *vspace, void *vaddr, seL4_Word type, seL
 
 }
 
-int sel4utils_walk_vspace(vspace_t *vspace, vka_t *vka)
+int sel4utils_walk_vspace(vspace_t *vspace)
 {
     sel4utils_alloc_data_t *data = get_alloc_data(vspace);
 

@@ -67,6 +67,16 @@ int sel4utils_arch_init_context_with_args(sel4utils_thread_entry_fn entry_point,
                                           bool local_stack, void *stack_top, seL4_UserContext *context,
                                           vka_t *vka, vspace_t *local_vspace, vspace_t *remote_vspace);
 
+/**
+ * @brief initializes the given user context's TLS base register for a specific architecture.
+ * NOTE: this is currently only defined for AARCH64 arch
+ *
+ * @param context a user context to configure
+ * @param tls_base the TLS base to set in the user context
+ * @return int 0 on success
+ */
+int sel4utils_arch_init_context_tls_base(seL4_UserContext *context, void *tls_base);
+
 /* convenient wrappers */
 static inline int
 sel4utils_arch_init_local_context(sel4utils_thread_entry_fn entry_point,

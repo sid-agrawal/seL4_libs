@@ -37,3 +37,10 @@ int sel4utils_arch_init_context_with_args(sel4utils_thread_entry_fn entry_point,
 
     return sel4utils_arch_init_context(entry_point, stack_top, context);
 }
+
+int sel4utils_arch_init_context_tls_base(seL4_UserContext *context, void *tls_base)
+{
+    context->tpidr_el0 = (seL4_Word)tls_base;
+
+    return 0;
+}

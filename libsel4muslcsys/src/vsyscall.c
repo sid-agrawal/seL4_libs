@@ -310,6 +310,9 @@ uintptr_t VISIBLE SECTION("__vsyscall") __vsyscall_ptr = (uintptr_t) sel4_vsysca
  * environment. */
 extern void __init_libc(char const *const *envp, char const *pn);
 
+/* OSmosis data on the TLS */
+extern __thread void *__sel4gpi_osm_data;
+
 /* This is needed to force GCC to re-read the TLS base address on some
  * platforms when setting the IPC buffer address after it has changed.
  *
@@ -323,10 +326,17 @@ static void NO_INLINE update_ipc_buffer(seL4_IPCBuffer *tmp)
     __sel4_ipc_buffer = tmp;
 }
 
+static void NO_INLINE update_osm_data(void *data)
+{
+    __sel4gpi_osm_data = data;
+}
+
 /* Initialise muslc environment */
 void CONSTRUCTOR(CONFIG_LIB_SEL4_MUSLC_SYS_CONSTRUCTOR_PRIORITY) muslcsys_init_muslc(void)
 {
     seL4_IPCBuffer *tmp = __sel4_ipc_buffer;
+    void *tmp_osm_data = __sel4gpi_osm_data;
     __init_libc(sel4runtime_envp(), sel4runtime_argv()[0]);
     update_ipc_buffer(tmp);
+    update_osm_data(tmp_osm_data);
 }

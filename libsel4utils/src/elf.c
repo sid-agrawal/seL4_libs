@@ -186,6 +186,11 @@ static int load_segments(vspace_t *loadee_vspace, vspace_t *loader_vspace,
     return 0;
 }
 
+static bool is_executable_segment(const elf_t *elf_file, int index)
+{
+    return elf_getProgramHeaderFlags(elf_file, index) & PF_X;
+}
+
 static bool is_loadable_section(const elf_t *elf_file, int index)
 {
     return elf_getProgramHeaderType(elf_file, index) == PT_LOAD;
@@ -249,7 +254,7 @@ static int create_reservations(vspace_t *loadee, size_t total_regions, sel4utils
             return -1;
         }
         sel4utils_res_t *sel4utils_res = reservation_to_res(regions[i].reservation);
-        sel4utils_res->type = SEL4UTILS_RES_TYPE_ELF;
+        sel4utils_res->type = regions[i].executable ? SEL4UTILS_RES_TYPE_CODE : SEL4UTILS_RES_TYPE_DATA;
     }
     return 0;
 
@@ -368,6 +373,7 @@ static int read_regions(const elf_t *elf_file, size_t total_regions, sel4utils_e
 
             region->cacheable = 1;
             region->rights = rights_from_elf(elf_getProgramHeaderFlags(elf_file, i));
+            region->executable = is_executable_segment(elf_file, i);
             // elf_getProgramHeaderMemorySize should just return `uintptr_t`
             region->elf_vstart = (void *) elf_getProgramHeaderVaddr(elf_file, i);
             region->size = elf_getProgramHeaderMemorySize(elf_file, i);
@@ -546,7 +552,19 @@ void *sel4utils_elf_load(vspace_t *loadee, vspace_t *loader, vka_t *loadee_vka, 
                          const elf_t *elf_file)
 {
     int num_regions = count_loadable_regions(elf_file);
+    /* (XXX) Linh: memory-leak here, why? */
     sel4utils_elf_region_t *regions = malloc(sizeof(sel4utils_elf_region_t) * num_regions);
+    /* This creates reservations too */
+    return sel4utils_elf_load_record_regions(loadee, loader, loadee_vka, loader_vka, elf_file, regions, 0);
+}
+
+void *sel4utils_elf_load2(vspace_t *loadee, vspace_t *loader, vka_t *loadee_vka, vka_t *loader_vka,
+                          const elf_t *elf_file, sel4utils_elf_region_t **ret_regions, int *ret_num_regions)
+{
+    int num_regions = count_loadable_regions(elf_file);
+    sel4utils_elf_region_t *regions = malloc(sizeof(sel4utils_elf_region_t) * num_regions);
+    *ret_regions = regions;
+    *ret_num_regions = num_regions;
     /* This creates reservations too */
     return sel4utils_elf_load_record_regions(loadee, loader, loadee_vka, loader_vka, elf_file, regions, 0);
 }

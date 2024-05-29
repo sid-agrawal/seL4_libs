@@ -38,6 +38,8 @@ typedef struct sel4utils_elf_region {
     int cacheable;
     /* Index of this elf segment in the section header */
     int segment_index;
+    /* whether the region is executable, this is a separate field because it is not captured by seL4_CapRights_t*/
+    bool executable;
 } sel4utils_elf_region_t;
 
 /**
@@ -82,6 +84,25 @@ sel4utils_elf_load_record_regions(vspace_t *loadee, vspace_t *loader, vka_t *loa
 void *
 sel4utils_elf_load(vspace_t *loadee, vspace_t *loader, vka_t *loadee_vka,
                    vka_t *loader_vka, const elf_t *elf);
+
+/**
+ * The exact same function as sel4utils_elf_load, except it also returns the list of
+ * vspace reservations made during loads - primarily for OSmosis tracking purposes.
+ *
+ * @param loadee the vspace to load the elf file into
+ * @param loader the vspace we are loading from
+ * @param loadee_vka allocator to use for allocation in the loadee vspace
+ * @param loader_vka allocator to use for loader vspace. Can be the same as loadee_vka.
+ * @param elf the elf file to load
+ * @param ret_regions returns info about the reservations that were made
+ * @param ret_num_regions returns the number of loadable regions
+ *
+ * @return The entry point of the new process, NULL on error
+ */
+void *
+sel4utils_elf_load2(vspace_t *loadee, vspace_t *loader, vka_t *loadee_vka,
+                    vka_t *loader_vka, const elf_t *elf,
+                    sel4utils_elf_region_t **ret_regions, int *ret_num_regions);
 
 /**
  * Parses an elf file but does not actually load it. Merely reserves the regions in the vspace

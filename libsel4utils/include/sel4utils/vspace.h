@@ -57,13 +57,14 @@ typedef int(*sel4utils_map_page_fn)(vspace_t *vspace, seL4_CPtr cap, void *vaddr
 
 enum sel4utils_reservation_type
 {
-    SEL4UTILS_RES_TYPE_ELF = 1, /* This came from ELF loading and we not distinguishing code/data from the elf for now.*/
+    SEL4UTILS_RES_TYPE_NONE,
+    SEL4UTILS_RES_TYPE_DATA, // ELF data sections
+    SEL4UTILS_RES_TYPE_CODE, // ELF executable sections
     SEL4UTILS_RES_TYPE_STACK,
     SEL4UTILS_RES_TYPE_IPC_BUF,
     SEL4UTILS_RES_TYPE_HEAP,
     SEL4UTILS_RES_TYPE_SHARED_FRAMES,
     SEL4UTILS_RES_TYPE_GENERIC, /* for any generic frame, used for any purpose */
-    SEL4UTILS_RES_TYPE_OTHER,
     SEL4UTILS_RES_TYPE_MAX
 };
 typedef enum sel4utils_reservation_type sel4utils_reservation_type_t;
@@ -71,22 +72,22 @@ typedef enum sel4utils_reservation_type sel4utils_reservation_type_t;
 static inline char * human_readable_va_res_type(sel4utils_reservation_type_t type)
  {
     switch (type) {
-        case SEL4UTILS_RES_TYPE_ELF:
-            return "ELF";
-        case SEL4UTILS_RES_TYPE_STACK:
-            return "STACK";
-        case SEL4UTILS_RES_TYPE_IPC_BUF:
-            return "IPC_BUF";
-        case SEL4UTILS_RES_TYPE_HEAP:
-            return "HEAP";
-        case SEL4UTILS_RES_TYPE_SHARED_FRAMES:
-            return "SHARED_FRAMES";
-        case SEL4UTILS_RES_TYPE_OTHER:
-            return "OTHER";
-        case SEL4UTILS_RES_TYPE_GENERIC:
-            return "GENERIC";
-        default:
-            return "UNKNOWN";
+    case SEL4UTILS_RES_TYPE_DATA:
+        return "ELF_DATA";
+    case SEL4UTILS_RES_TYPE_CODE:
+        return "ELF_CODE";
+    case SEL4UTILS_RES_TYPE_STACK:
+        return "STACK";
+    case SEL4UTILS_RES_TYPE_IPC_BUF:
+        return "IPC_BUF";
+    case SEL4UTILS_RES_TYPE_HEAP:
+        return "HEAP";
+    case SEL4UTILS_RES_TYPE_SHARED_FRAMES:
+        return "SHARED_FRAMES";
+    case SEL4UTILS_RES_TYPE_GENERIC:
+        return "GENERIC";
+    default:
+        return "UNKNOWN";
     }
 }
 

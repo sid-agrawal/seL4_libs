@@ -309,7 +309,7 @@ int sel4utils_osm_spawn_process_v(sel4utils_process_t *process,
     auxv[5].a_type = AT_SEL4_TCB;
     auxv[5].a_un.a_val = process->dest_tcb_cptr;
 
-    auxv[6].a_type = AT_OSM_INIT_DATA;
+    auxv[6].a_type = AT_OSM_SHARED_DATA;
     auxv[6].a_un.a_val = (uint64_t) osm_init_data;
 
     if (process->sysinfo) {

@@ -74,12 +74,6 @@ struct env {
     int num_regions;
     sel4utils_elf_region_t regions[MAX_REGIONS];
 
-    // Added for libsel4gpi
-    seL4_CPtr self_ads_cptr;
-    seL4_CPtr self_cpu_cptr;
-    seL4_CPtr self_pd_cptr;
-    seL4_CPtr gpi_endpoint;
-
     /* irq handler for test process */
     seL4_CPtr irq_handler;
 };

@@ -77,6 +77,17 @@ int sel4utils_arch_init_context_with_args(sel4utils_thread_entry_fn entry_point,
  */
 int sel4utils_arch_init_context_tls_base(seL4_UserContext *context, void *tls_base);
 
+/**
+ * @brief initializes the given user context to run a guest for a specific architecture
+ * NOTE: this is currently only defined for AARCH64 arch and only supports Linux guests
+ *
+ * @param kernel_pc
+ * @param kernel_dtb
+ * @param context
+ * @return int
+ */
+int sel4utils_arch_init_context_guest(uintptr_t kernel_pc, uintptr_t kernel_dtb, seL4_UserContext *context);
+
 /* convenient wrappers */
 static inline int
 sel4utils_arch_init_local_context(sel4utils_thread_entry_fn entry_point,

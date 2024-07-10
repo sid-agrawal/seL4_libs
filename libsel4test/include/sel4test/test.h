@@ -83,7 +83,7 @@ typedef struct env *env_t;
 typedef int (*test_fn)(uintptr_t environment);
 
 /* Test type definitions. */
-typedef enum test_type_name {BOOTSTRAP = 0, BASIC} test_type_name_t;
+typedef enum test_type_name {BOOTSTRAP = 0, BASIC, OSM} test_type_name_t;
 typedef struct testcase testcase_t; // Forward type declaration.
 typedef struct test_type {
     /* Represents a single test type. See comment for `struct testcase` for info about ALIGN(32). */
@@ -148,6 +148,9 @@ typedef struct testcase ALIGN(sizeof(struct testcase)) testcase_t;
 #define DEFINE_TEST(_name, _description, _function, _enabled) DEFINE_TEST_WITH_TYPE(_name, _description, _function, BASIC, _enabled)
 
 #define DEFINE_TEST_BOOTSTRAP(_name, _description, _function, _enabled) DEFINE_TEST_WITH_TYPE(_name, _description, _function, BOOTSTRAP, _enabled)
+
+#define DEFINE_TEST_OSM(_name, _description, _function, _enabled) DEFINE_TEST_WITH_TYPE(_name, _description, _function, OSM, _enabled)
+
 /**/
 
 /* Definitions so that we can find the test types */

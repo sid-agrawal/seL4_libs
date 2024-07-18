@@ -35,7 +35,8 @@
 
 /* Contains information about the test environment for regular tests, bootstrap tests do
  * not use this environment */
-struct env {
+struct env
+{
     /* An initialised vka that may be used by the test. */
     vka_t vka;
     /* virtual memory management interface */
@@ -76,6 +77,9 @@ struct env {
 
     /* irq handler for test process */
     seL4_CPtr irq_handler;
+
+    /* endpoint for OSmosis IPC benchmarks */
+    seL4_CPtr ipc_bench_ep;
 };
 typedef struct env *env_t;
 
@@ -83,9 +87,15 @@ typedef struct env *env_t;
 typedef int (*test_fn)(uintptr_t environment);
 
 /* Test type definitions. */
-typedef enum test_type_name {BOOTSTRAP = 0, BASIC, OSM} test_type_name_t;
+typedef enum test_type_name
+{
+    BOOTSTRAP = 0,
+    BASIC,
+    OSM
+} test_type_name_t;
 typedef struct testcase testcase_t; // Forward type declaration.
-typedef struct test_type {
+typedef struct test_type
+{
     /* Represents a single test type. See comment for `struct testcase` for info about ALIGN(32). */
     const char *name;
     test_type_name_t id;
@@ -102,15 +112,15 @@ typedef struct test_type {
 /* Declare a test type.
  * For now, we put the test types in a separate elf section. */
 #define DEFINE_TEST_TYPE(_name, _id, _set_up_test_type, _tear_down_test_type, _set_up, _tear_down, _run_test) \
-    __attribute__((used)) __attribute__((section("_test_type"))) struct test_type TEST_TYPE_ ##_name = { \
-    .name = #_name, \
-    .id = _id, \
-    .set_up_test_type = _set_up_test_type, \
-    .tear_down_test_type = _tear_down_test_type, \
-    .set_up = _set_up, \
-    .tear_down = _tear_down, \
-    .run_test = _run_test, \
-};
+    __attribute__((used)) __attribute__((section("_test_type"))) struct test_type TEST_TYPE_##_name = {       \
+        .name = #_name,                                                                                       \
+        .id = _id,                                                                                            \
+        .set_up_test_type = _set_up_test_type,                                                                \
+        .tear_down_test_type = _tear_down_test_type,                                                          \
+        .set_up = _set_up,                                                                                    \
+        .tear_down = _tear_down,                                                                              \
+        .run_test = _run_test,                                                                                \
+    };
 
 /* Represents a single testcase.
  * Because this struct is used to declare variables that get
@@ -122,7 +132,8 @@ typedef struct test_type {
  * the objects in the section is the same as the size reported
  * by sizeof(struct testcase), allowing as to treat the items
  * in the section as an array */
-struct testcase {
+struct testcase
+{
     char name[TEST_NAME_MAX];
     const char *description;
     test_fn function;
@@ -136,20 +147,34 @@ typedef struct testcase ALIGN(sizeof(struct testcase)) testcase_t;
  * C99 style (name = _name, desc = _desc, func = _func...) to make sure
  * that it is accepted by C++ compilers.
  */
-#define DEFINE_TEST_WITH_TYPE(_name, _description, _function, _test_type, _enabled) \
-    __attribute__((used)) __attribute__((section("_test_case"))) struct testcase TEST_ ## _name = { \
-    #_name, \
-    _description, \
-    (test_fn)_function, \
-    _test_type, \
-    _enabled, \
-};
+#define DEFINE_TEST_WITH_TYPE(_name, _description, _function, _test_type, _enabled)               \
+    __attribute__((used)) __attribute__((section("_test_case"))) struct testcase TEST_##_name = { \
+        #_name,                                                                                   \
+        _description,                                                                             \
+        (test_fn)_function,                                                                       \
+        _test_type,                                                                               \
+        _enabled,                                                                                 \
+    };
 
 #define DEFINE_TEST(_name, _description, _function, _enabled) DEFINE_TEST_WITH_TYPE(_name, _description, _function, BASIC, _enabled)
 
 #define DEFINE_TEST_BOOTSTRAP(_name, _description, _function, _enabled) DEFINE_TEST_WITH_TYPE(_name, _description, _function, BOOTSTRAP, _enabled)
 
 #define DEFINE_TEST_OSM(_name, _description, _function, _enabled) DEFINE_TEST_WITH_TYPE(_name, _description, _function, OSM, _enabled)
+
+/* Repeat a testcase 10 times */
+
+#define DEFINE_TEST_WITH_TYPE_MULTIPLE(_name, _description, _function, _type, _enabled) \
+        DEFINE_TEST_WITH_TYPE(_name##_##01, _description, _function, _type, _enabled)   \
+        // DEFINE_TEST_WITH_TYPE(_name##_##02, _description, _function, _type, _enabled)   \
+        // DEFINE_TEST_WITH_TYPE(_name##_##03, _description, _function, _type, _enabled)   \
+        // DEFINE_TEST_WITH_TYPE(_name##_##04, _description, _function, _type, _enabled)   \
+        // DEFINE_TEST_WITH_TYPE(_name##_##05, _description, _function, _type, _enabled)   \
+        // DEFINE_TEST_WITH_TYPE(_name##_##06, _description, _function, _type, _enabled)   \
+        // DEFINE_TEST_WITH_TYPE(_name##_##07, _description, _function, _type, _enabled)   \
+        // DEFINE_TEST_WITH_TYPE(_name##_##08, _description, _function, _type, _enabled)   \
+        // DEFINE_TEST_WITH_TYPE(_name##_##09, _description, _function, _type, _enabled)   \
+        // DEFINE_TEST_WITH_TYPE(_name##_##10, _description, _function, _type, _enabled)   \
 
 /**/
 
@@ -163,11 +188,14 @@ extern testcase_t __stop__test_case[];
 
 static inline int test_type_comparator(const void *a, const void *b)
 {
-    const struct test_type **ta = (const struct test_type **) a;
-    const struct test_type **tb = (const struct test_type **) b;
-    if ((*ta)->id > (*tb)->id) {
+    const struct test_type **ta = (const struct test_type **)a;
+    const struct test_type **tb = (const struct test_type **)b;
+    if ((*ta)->id > (*tb)->id)
+    {
         return 1;
-    } else if ((*ta)->id < (*tb)->id) {
+    }
+    else if ((*ta)->id < (*tb)->id)
+    {
         return -1;
     }
 
@@ -206,98 +234,135 @@ static inline void print_error_in_ipc(seL4_Error e)
 {
 #ifdef CONFIG_KERNEL_INVOCATION_REPORT_ERROR_IPC
     // If it hasnt been printed already
-    if (!seL4_CanPrintError() && e != seL4_NoError) {
+    if (!seL4_CanPrintError() && e != seL4_NoError)
+    {
         printf("%s", seL4_GetDebugError());
     }
 #endif
 }
 
-#define test_error_eq(e, c) \
-    if (!((e) == (c))) { \
-        print_error_in_ipc(e); \
+#define test_error_eq(e, c)                        \
+    if (!((e) == (c)))                             \
+    {                                              \
+        print_error_in_ipc(e);                     \
         return _test_fail(#e, __FILE__, __LINE__); \
     }
-#define test_assert(e) if (!(e)) return _test_fail(#e, __FILE__, __LINE__)
-#define test_check(e) if (!(e)) _test_error(#e, __FILE__, __LINE__)
-#define test_assert_fatal(e) if (!(e)) return _test_abort(#e, __FILE__, __LINE__)
+#define test_assert(e) \
+    if (!(e))          \
+    return _test_fail(#e, __FILE__, __LINE__)
+#define test_check(e) \
+    if (!(e))         \
+    _test_error(#e, __FILE__, __LINE__)
+#define test_assert_fatal(e) \
+    if (!(e))                \
+    return _test_abort(#e, __FILE__, __LINE__)
 
 #define __TEST_BUFFER_SIZE 200
-#define test_op_type(a, b, op, t, name_a, name_b, cast) \
-    do {\
-        if (!(a op b)) { \
-            int len = snprintf(NULL, 0, "Check %s(" t ") %s %s(" t ") failed.",\
-                               #name_a, (cast) a, #op, #name_b, (cast) b) + 1; \
-            char buffer[len]; \
-            snprintf(buffer, len, "Check %s(" t ") %s %s(" t ") failed.",\
-                     #name_a, (cast) a, #op, #name_b, (cast) b); \
-            _test_error(buffer, __FILE__, __LINE__); \
-        }\
+#define test_op_type(a, b, op, t, name_a, name_b, cast)                         \
+    do                                                                          \
+    {                                                                           \
+        if (!(a op b))                                                          \
+        {                                                                       \
+            int len = snprintf(NULL, 0, "Check %s(" t ") %s %s(" t ") failed.", \
+                               #name_a, (cast)a, #op, #name_b, (cast)b) +       \
+                      1;                                                        \
+            char buffer[len];                                                   \
+            snprintf(buffer, len, "Check %s(" t ") %s %s(" t ") failed.",       \
+                     #name_a, (cast)a, #op, #name_b, (cast)b);                  \
+            _test_error(buffer, __FILE__, __LINE__);                            \
+        }                                                                       \
     } while (0)
 
-#define test_op(a, b, op) \
-    do { \
-         typeof (a) _a = (a); \
-         typeof (b) _b = (b); \
-         if (sizeof(_a) != sizeof(_b)) { \
-             int len = snprintf(NULL, 0, "%s (size %zu) != %s (size %zu), use of test_eq incorrect", #a,\
-                     sizeof(_a), #b, sizeof(_b)) + 1;\
-             char buffer[len];\
-             snprintf(buffer, len, "%s (size %zu) != %s (size %zu), use of test_eq incorrect", #a, sizeof(_a),\
-                     #b, sizeof(_b));\
-             _test_error(buffer, __FILE__, __LINE__);\
-         } else if (TYPES_COMPATIBLE(typeof(_a), int)) {\
-             test_op_type(_a, _b, op, "%d", a, b, int); \
-         } else if (TYPES_COMPATIBLE(typeof(_a), long)) {\
-             test_op_type(_a, _b, op, "%ld", a, b, long); \
-         } else if (TYPES_COMPATIBLE(typeof(_a), long long)) {\
-             test_op_type(_a, _b, op, "%lld", a, b, long long); \
-         } else if (TYPES_COMPATIBLE(typeof(_a), unsigned int)) {\
-             test_op_type(_a, _b, op, "%u", a, b, unsigned int); \
-         } else if (TYPES_COMPATIBLE(typeof(_a), unsigned long)) {\
-             test_op_type(_a, _b, op, "%lu", a, b, unsigned long); \
-         } else if (TYPES_COMPATIBLE(typeof(_a), unsigned long long)) {\
-             test_op_type(_a, _b, op, "%llu", a, b, unsigned long long); \
-         } else if (TYPES_COMPATIBLE(typeof(_a), char)) {\
-             test_op_type(_a, _b, op, "%c", a, b, char); \
-         } else if (TYPES_COMPATIBLE(typeof(_a), uintptr_t)) {\
-             test_op_type(_a, _b, op, "0x%" PRIxPTR, a, b, uintptr_t);\
-         } else { \
-             _test_error("Cannot use test_op on this type", __FILE__, __LINE__);\
-         }\
+#define test_op(a, b, op)                                                                                     \
+    do                                                                                                        \
+    {                                                                                                         \
+        typeof(a) _a = (a);                                                                                   \
+        typeof(b) _b = (b);                                                                                   \
+        if (sizeof(_a) != sizeof(_b))                                                                         \
+        {                                                                                                     \
+            int len = snprintf(NULL, 0, "%s (size %zu) != %s (size %zu), use of test_eq incorrect", #a,       \
+                               sizeof(_a), #b, sizeof(_b)) +                                                  \
+                      1;                                                                                      \
+            char buffer[len];                                                                                 \
+            snprintf(buffer, len, "%s (size %zu) != %s (size %zu), use of test_eq incorrect", #a, sizeof(_a), \
+                     #b, sizeof(_b));                                                                         \
+            _test_error(buffer, __FILE__, __LINE__);                                                          \
+        }                                                                                                     \
+        else if (TYPES_COMPATIBLE(typeof(_a), int))                                                           \
+        {                                                                                                     \
+            test_op_type(_a, _b, op, "%d", a, b, int);                                                        \
+        }                                                                                                     \
+        else if (TYPES_COMPATIBLE(typeof(_a), long))                                                          \
+        {                                                                                                     \
+            test_op_type(_a, _b, op, "%ld", a, b, long);                                                      \
+        }                                                                                                     \
+        else if (TYPES_COMPATIBLE(typeof(_a), long long))                                                     \
+        {                                                                                                     \
+            test_op_type(_a, _b, op, "%lld", a, b, long long);                                                \
+        }                                                                                                     \
+        else if (TYPES_COMPATIBLE(typeof(_a), unsigned int))                                                  \
+        {                                                                                                     \
+            test_op_type(_a, _b, op, "%u", a, b, unsigned int);                                               \
+        }                                                                                                     \
+        else if (TYPES_COMPATIBLE(typeof(_a), unsigned long))                                                 \
+        {                                                                                                     \
+            test_op_type(_a, _b, op, "%lu", a, b, unsigned long);                                             \
+        }                                                                                                     \
+        else if (TYPES_COMPATIBLE(typeof(_a), unsigned long long))                                            \
+        {                                                                                                     \
+            test_op_type(_a, _b, op, "%llu", a, b, unsigned long long);                                       \
+        }                                                                                                     \
+        else if (TYPES_COMPATIBLE(typeof(_a), char))                                                          \
+        {                                                                                                     \
+            test_op_type(_a, _b, op, "%c", a, b, char);                                                       \
+        }                                                                                                     \
+        else if (TYPES_COMPATIBLE(typeof(_a), uintptr_t))                                                     \
+        {                                                                                                     \
+            test_op_type(_a, _b, op, "0x%" PRIxPTR, a, b, uintptr_t);                                         \
+        }                                                                                                     \
+        else                                                                                                  \
+        {                                                                                                     \
+            _test_error("Cannot use test_op on this type", __FILE__, __LINE__);                               \
+        }                                                                                                     \
     } while (0)
 
 /* Pretty printed test_check wrapper macros for basic comparisons on base types,
  * which output the values and variable names to aid debugging */
-#define test_eq(a, b)  test_op(a, b, ==)
+#define test_eq(a, b) test_op(a, b, ==)
 #define test_neq(a, b) test_op(a, b, !=)
-#define test_gt(a, b)  test_op(a, b, >)
+#define test_gt(a, b) test_op(a, b, >)
 #define test_geq(a, b) test_op(a, b, >=)
-#define test_lt(a, b)  test_op(a, b, <)
+#define test_lt(a, b) test_op(a, b, <)
 #define test_leq(a, b) test_op(a, b, <=)
 
 #define __TEST_MAX_STRING 50
-#define test_strop(a, b, op) \
-     do {\
-          if (strnlen(a, __TEST_MAX_STRING) == __TEST_MAX_STRING) {\
-              _test_error("String " #a " too long for test_str* macros", __FILE__, __LINE__);\
-          } else if (strnlen(b, __TEST_MAX_STRING) == __TEST_MAX_STRING) {\
-              _test_error("String " #b " too long for test_str* macros", __FILE__, __LINE__);\
-          } else if (!(strncmp(a, b, __TEST_MAX_STRING)) op 0) {\
-              char buffer[__TEST_BUFFER_SIZE + 2 * __TEST_MAX_STRING];\
-              snprintf(buffer, sizeof(buffer),\
-                       "Check %s(%s) %s %s(%s) failed.", #a, a, #op, #b, b);\
-              _test_error(buffer, __FILE__, __LINE__); \
-          }\
+#define test_strop(a, b, op)                                                                \
+    do                                                                                      \
+    {                                                                                       \
+        if (strnlen(a, __TEST_MAX_STRING) == __TEST_MAX_STRING)                             \
+        {                                                                                   \
+            _test_error("String " #a " too long for test_str* macros", __FILE__, __LINE__); \
+        }                                                                                   \
+        else if (strnlen(b, __TEST_MAX_STRING) == __TEST_MAX_STRING)                        \
+        {                                                                                   \
+            _test_error("String " #b " too long for test_str* macros", __FILE__, __LINE__); \
+        }                                                                                   \
+        else if (!(strncmp(a, b, __TEST_MAX_STRING))op 0)                                   \
+        {                                                                                   \
+            char buffer[__TEST_BUFFER_SIZE + 2 * __TEST_MAX_STRING];                        \
+            snprintf(buffer, sizeof(buffer),                                                \
+                     "Check %s(%s) %s %s(%s) failed.", #a, a, #op, #b, b);                  \
+            _test_error(buffer, __FILE__, __LINE__);                                        \
+        }                                                                                   \
     } while (0)
 
 /* Pretty printed test_check wrapper macros for basic comparisons on c strings,
  * which output the values and variable names to aid debugging */
-#define test_streq(a, b)  test_strop(a, b, ==)
+#define test_streq(a, b) test_strop(a, b, ==)
 #define test_strneq(a, b) test_strop(a, b, !=)
-#define test_strge(a, b)  test_strop(a, b, >)
+#define test_strge(a, b) test_strop(a, b, >)
 #define test_strgeq(a, b) test_strop(a, b, >=)
-#define test_strle(a, b)  test_strop(a, b, <)
+#define test_strle(a, b) test_strop(a, b, <)
 #define test_strleq(a, b) test_strop(a, b, <=)
 
 env_t sel4test_get_env(void);
-

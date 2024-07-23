@@ -173,15 +173,56 @@ typedef struct testcase ALIGN(sizeof(struct testcase)) testcase_t;
 
 #define DEFINE_TEST_WITH_TYPE_MULTIPLE(_name, _description, _function, _type, _enabled) \
         DEFINE_TEST_WITH_TYPE(_name##_##01, _description, _function, _type, _enabled)   \
-        // DEFINE_TEST_WITH_TYPE(_name##_##02, _description, _function, _type, _enabled)   \
-        // DEFINE_TEST_WITH_TYPE(_name##_##03, _description, _function, _type, _enabled)   \
-        // DEFINE_TEST_WITH_TYPE(_name##_##04, _description, _function, _type, _enabled)   \
-        // DEFINE_TEST_WITH_TYPE(_name##_##05, _description, _function, _type, _enabled)   \
-        // DEFINE_TEST_WITH_TYPE(_name##_##06, _description, _function, _type, _enabled)   \
-        // DEFINE_TEST_WITH_TYPE(_name##_##07, _description, _function, _type, _enabled)   \
-        // DEFINE_TEST_WITH_TYPE(_name##_##08, _description, _function, _type, _enabled)   \
-        // DEFINE_TEST_WITH_TYPE(_name##_##09, _description, _function, _type, _enabled)   \
-        // DEFINE_TEST_WITH_TYPE(_name##_##10, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##02, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##03, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##04, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##05, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##06, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##07, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##08, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##09, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##10, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##11, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##12, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##13, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##14, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##15, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##16, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##17, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##18, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##19, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##20, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##21, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##22, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##23, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##24, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##25, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##26, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##27, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##28, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##29, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##30, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##31, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##32, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##33, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##34, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##35, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##36, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##37, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##38, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##39, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##40, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##41, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##42, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##43, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##44, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##45, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##46, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##47, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##48, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##49, _description, _function, _type, _enabled)   \
+        DEFINE_TEST_WITH_TYPE(_name##_##50, _description, _function, _type, _enabled)   \
+        
 
 /**/
 

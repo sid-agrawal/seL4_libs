@@ -44,6 +44,7 @@ typedef enum _sel4test_communication_codes {
     SEL4TEST_TIME_MAX,
 
     SEL4TEST_PROTOBUF_RPC = SEL4TEST_TIME_MAX,
+    SEL4TEST_BENCH_IPC,
 
     SEL4TEST_OUTPUT_MAX
 } sel4test_output_t;

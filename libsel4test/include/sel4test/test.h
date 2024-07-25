@@ -38,8 +38,6 @@
 
 #define MILLISECOND 1000000UL
 
-#define DUMP_MODEL false
-
 /* Contains information about the test environment for regular tests, bootstrap tests do
  * not use this environment */
 struct env

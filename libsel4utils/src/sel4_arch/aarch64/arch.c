@@ -53,3 +53,10 @@ int sel4utils_arch_init_context_guest(uintptr_t kernel_pc, uintptr_t kernel_dtb,
 
     return 0;
 }
+
+int sel4utils_arch_set_context_type(seL4_Word type, seL4_UserContext *context)
+{
+    context->x1 = type;
+
+    return 0;
+}

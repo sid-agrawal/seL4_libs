@@ -40,6 +40,16 @@ int sel4utils_stack_copy_args(vspace_t *current_vspace, vspace_t *target_vspace,
  */
 int sel4utils_arch_init_context(void *entry_point, void *stack_top, seL4_UserContext *context);
 
+/**
+ * @brief Sets the runtime type (either OSM, or SEL4UTILS) in the user context,
+ * which will affect how a new process-like PD is started
+ *
+ * @param type the runtime type
+ * @param context the seL4 user context
+ * @return int 0 on success
+ */
+int sel4utils_arch_set_context_type(seL4_Word type, seL4_UserContext *context);
+
 /*
  * Legacy function to initialise a threads user context for a specific architecture, and put
  * some arguments into registers/stack.
@@ -81,10 +91,10 @@ int sel4utils_arch_init_context_tls_base(seL4_UserContext *context, void *tls_ba
  * @brief initializes the given user context to run a guest for a specific architecture
  * NOTE: this is currently only defined for AARCH64 arch and only supports Linux guests
  *
- * @param kernel_pc
- * @param kernel_dtb
- * @param context
- * @return int
+ * @param kernel_pc entry point of the guest
+ * @param kernel_dtb address of the guest's DTB in its address space
+ * @param context the seL4 user context
+ * @return int 0 on success
  */
 int sel4utils_arch_init_context_guest(uintptr_t kernel_pc, uintptr_t kernel_dtb, seL4_UserContext *context);
 

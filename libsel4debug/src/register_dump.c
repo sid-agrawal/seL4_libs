@@ -11,6 +11,22 @@
 #include <stdio.h>
 #include <utils/zf_log.h>
 
+void sel4debug_print_registers_prefix(seL4_UserContext *context, char *prefix)
+{
+    const int num_regs = sizeof(*context) / sizeof(seL4_Word);
+    printf("%sRegister dump:\n", prefix);
+    for (unsigned int i = 0; i < num_regs; i++)
+    {
+        printf("%s%s:\t0x%" SEL4_PRIx_word "\n",
+               prefix, register_names[i], ((seL4_Word *)context)[i]);
+    }
+}
+
+void sel4debug_print_registers(seL4_UserContext *context)
+{
+    sel4debug_print_registers_prefix(context, "");
+}
+
 void sel4debug_dump_registers(seL4_CPtr tcb)
 {
     sel4debug_dump_registers_prefix(tcb, "");
@@ -27,9 +43,5 @@ void sel4debug_dump_registers_prefix(seL4_CPtr tcb, char *prefix)
         return;
     }
 
-    printf("%sRegister dump:\n", prefix);
-    for (unsigned int i = 0; i < num_regs; i++) {
-        printf("%s%s:\t0x%"SEL4_PRIx_word"\n",
-               prefix, register_names[i], ((seL4_Word *)&context)[i]);
-    }
+    sel4debug_print_registers_prefix(&context, prefix);
 }

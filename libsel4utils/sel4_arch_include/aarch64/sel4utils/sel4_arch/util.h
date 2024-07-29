@@ -42,6 +42,12 @@ sel4utils_set_arg0(seL4_UserContext *regs, seL4_Word value)
     regs->x0 = value;
 }
 
+static inline void
+sel4utils_set_arg1(seL4_UserContext *regs, seL4_Word value)
+{
+    regs->x1 = value;
+}
+
 static inline seL4_Word
 sel4utils_get_sp(seL4_UserContext regs)
 {

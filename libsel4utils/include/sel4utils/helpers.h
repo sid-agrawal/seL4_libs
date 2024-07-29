@@ -40,16 +40,6 @@ int sel4utils_stack_copy_args(vspace_t *current_vspace, vspace_t *target_vspace,
  */
 int sel4utils_arch_init_context(void *entry_point, void *stack_top, seL4_UserContext *context);
 
-/**
- * @brief Sets the runtime type (either OSM, or SEL4UTILS) in the user context,
- * which will affect how a new process-like PD is started
- *
- * @param type the runtime type
- * @param context the seL4 user context
- * @return int 0 on success
- */
-int sel4utils_arch_set_context_type(seL4_Word type, seL4_UserContext *context);
-
 /*
  * Legacy function to initialise a threads user context for a specific architecture, and put
  * some arguments into registers/stack.

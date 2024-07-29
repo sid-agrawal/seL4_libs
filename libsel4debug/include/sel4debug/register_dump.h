@@ -8,5 +8,7 @@
 
 #include <sel4debug/arch/registers.h>
 
+void sel4debug_print_registers_prefix(seL4_UserContext *context, char *prefix);
+void sel4debug_print_registers(seL4_UserContext *context);
 void sel4debug_dump_registers(seL4_CPtr tcb);
 void sel4debug_dump_registers_prefix(seL4_CPtr tcb, char *prefix);

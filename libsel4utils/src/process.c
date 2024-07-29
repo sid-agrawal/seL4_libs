@@ -328,7 +328,7 @@ int sel4utils_spawn_process_v(sel4utils_process_t *process, vka_t *vka, vspace_t
         return -1;
     }
 #pragma GCC diagnostic pop
-
+    printf("envp: %lX\n", sizeof(dest_envp));
     /* we need to make sure the stack is aligned to a double word boundary after we push on everything else
      * below this point. First, work out how much we are going to push */
     size_t to_push = 5 * sizeof(seL4_Word) + /* constants */
@@ -388,11 +388,8 @@ int sel4utils_spawn_process_v(sel4utils_process_t *process, vka_t *vka, vspace_t
         return error;
     }
 
-    error = sel4utils_arch_set_context_type(SEL4UTILS_PD, &context);
-    if (error)
-    {
-        return error;
-    }
+    /* set a flag in the first argument register to trigger the entire C runtime setup for sel4util PDs */
+    sel4utils_set_arg1(&context, (seL4_Word)SEL4UTILS_PD_RUNTIME);
 
     process->thread.initial_stack_pointer = (void *) initial_stack_pointer;
 

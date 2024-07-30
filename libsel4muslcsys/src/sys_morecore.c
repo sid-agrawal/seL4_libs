@@ -38,6 +38,20 @@ extern uintptr_t morecore_top;
 /* Pointer to free space in the morecore area. */
 extern uintptr_t morecore_base;
 
+/**
+ * (XXX) Arya: A basic and hacky implementation to allow for basic munmap
+ * Track a certain number of munmaps to be reused for mmap or reattached to the heap
+ */
+#define MAX_MUNMAP_TRACKING 16
+typedef struct _munmap_tracker
+{
+    bool valid;
+    void *addr;
+    size_t length;
+} munmap_tracker_t;
+
+static munmap_tracker_t munmap_tracking[MAX_MUNMAP_TRACKING] = {0};
+
 /* Actual morecore implementation
    returns 0 if failure, returns newbrk if success.
 */
@@ -49,11 +63,16 @@ long sys_brk(va_list ap)
     uintptr_t newbrk = va_arg(ap, uintptr_t);
 
     /*if the newbrk is 0, return the bottom of the heap*/
-    if (!newbrk) {
+    if (!newbrk)
+    {
         ret = morecore_base;
-    } else if (newbrk < morecore_top && newbrk > (uintptr_t)&morecore_area[0]) {
+    }
+    else if (newbrk < morecore_top && newbrk > (uintptr_t)&morecore_area[0])
+    {
         ret = morecore_base = newbrk;
-    } else {
+    }
+    else
+    {
         ret = 0;
     }
 
@@ -64,9 +83,11 @@ long sys_brk(va_list ap)
    here to support that. We make a bunch of assumptions in the process */
 long sys_mmap_impl(void *addr, size_t length, int prot, int flags, int fd, off_t offset)
 {
-    if (flags & MAP_ANONYMOUS) {
+    if (flags & MAP_ANONYMOUS)
+    {
         /* Check that we don't try and allocate more than exists */
-        if (length > morecore_top - morecore_base) {
+        if (length > morecore_top - morecore_base)
+        {
             return -ENOMEM;
         }
         /* Steal from the top */
@@ -81,6 +102,74 @@ long sys_mremap(va_list ap)
 {
     assert(!"not implemented");
     return -ENOMEM;
+}
+
+/* (XXX) Arya: Similarly to mmap_impl, support very basic unmap */
+long sys_munmap_impl(void *addr, size_t length)
+{
+    if (morecore_top == (uintptr_t) addr)
+    {
+        /* Reattach to the top */
+        morecore_top += length;
+        /* Check if any other piece can be reattached */
+        for (int i = 0; i < MAX_MUNMAP_TRACKING; i++)
+        {
+            if (munmap_tracking[i].valid == true && (uintptr_t) munmap_tracking[i].addr == morecore_top)
+            {
+                // Reclaim the memory
+                morecore_top += munmap_tracking[i].length;
+                munmap_tracking[i].valid = false;
+                break; // No more than one entry can be reattached
+            }
+        }
+    }
+    else
+    {
+        /* We need to track this piece */
+        int free_slot = -1;
+        bool tracked = false;
+
+        for (int i = 0; i < MAX_MUNMAP_TRACKING; i++)
+        {
+            if (munmap_tracking[i].valid == false)
+            {
+                // Track this as a free slot
+                if (free_slot == -1)
+                {
+                    free_slot = i;
+                }
+            }
+            else if (munmap_tracking[i].addr == addr + length)
+            {
+                // Add this section to the beginning of the tracked piece
+                munmap_tracking[i].addr = addr;
+                munmap_tracking[i].length += length;
+                tracked = true;
+                break;
+            }
+            else if (munmap_tracking[i].addr + munmap_tracking[i].length == addr)
+            {
+                // Add this section to the end of the tracked piece
+                munmap_tracking[i].length += length;
+                tracked = true;
+                break;
+            }
+        }
+
+        /* Track the unmap in a new slot */
+        if (!tracked)
+        {
+            if (free_slot == -1)
+            {
+                assert(!"Out of spots to track munmap");
+            }
+
+            munmap_tracking[free_slot].valid = true;
+            munmap_tracking[free_slot].addr = addr;
+            munmap_tracking[free_slot].length = length;
+        }
+    }
+    return 0;
 }
 
 #else
@@ -110,12 +199,14 @@ static uintptr_t brk_start;
 
 static void init_morecore_region(void)
 {
-    if (morecore_base == 0) {
-        if (morecore_size == 0) {
+    if (morecore_base == 0)
+    {
+        if (morecore_size == 0)
+        {
             ZF_LOGE("Warning: static morecore size is 0");
         }
-        morecore_base = (uintptr_t) morecore_area;
-        morecore_top = (uintptr_t) &morecore_area[morecore_size];
+        morecore_base = (uintptr_t)morecore_area;
+        morecore_top = (uintptr_t)&morecore_area[morecore_size];
     }
 }
 
@@ -127,11 +218,16 @@ static long sys_brk_static(va_list ap)
     /* ensure the morecore region is initialized */
     init_morecore_region();
     /*if the newbrk is 0, return the bottom of the heap*/
-    if (!newbrk) {
+    if (!newbrk)
+    {
         ret = morecore_base;
-    } else if (newbrk < morecore_top && newbrk > (uintptr_t)&morecore_area[0]) {
+    }
+    else if (newbrk < morecore_top && newbrk > (uintptr_t)&morecore_area[0])
+    {
         ret = morecore_base = newbrk;
-    } else {
+    }
+    else
+    {
         ret = 0;
     }
 
@@ -142,22 +238,28 @@ static long sys_brk_dynamic(va_list ap)
 {
     uintptr_t ret;
     uintptr_t newbrk = va_arg(ap, uintptr_t);
-    if (!muslc_this_vspace || !muslc_brk_reservation.res || !muslc_brk_reservation_start) {
+    if (!muslc_this_vspace || !muslc_brk_reservation.res || !muslc_brk_reservation_start)
+    {
         ZF_LOGE("Need to assign vspace for sys_brk to work!\n");
         assert(muslc_this_vspace && muslc_brk_reservation.res && muslc_brk_reservation_start);
         return 0;
     }
 
     /*if the newbrk is 0, return the bottom of the heap*/
-    if (newbrk == 0) {
+    if (newbrk == 0)
+    {
         brk_start = (uintptr_t)muslc_brk_reservation_start;
         ret = brk_start;
-    } else {
+    }
+    else
+    {
         /* try and map pages until this point */
-        while (brk_start < newbrk) {
-            int error = vspace_new_pages_at_vaddr(muslc_this_vspace, (void *) brk_start, 1,
+        while (brk_start < newbrk)
+        {
+            int error = vspace_new_pages_at_vaddr(muslc_this_vspace, (void *)brk_start, 1,
                                                   seL4_PageBits, muslc_brk_reservation);
-            if (error) {
+            if (error)
+            {
                 ZF_LOGE("Mapping new pages to extend brk region failed\n");
                 return 0;
             }
@@ -170,11 +272,16 @@ static long sys_brk_dynamic(va_list ap)
 
 long sys_brk(va_list ap)
 {
-    if (morecore_area != NULL) {
+    if (morecore_area != NULL)
+    {
         return sys_brk_static(ap);
-    } else if (muslc_this_vspace != NULL) {
+    }
+    else if (muslc_this_vspace != NULL)
+    {
         return sys_brk_dynamic(ap);
-    } else {
+    }
+    else
+    {
         ZF_LOGE("You need to define either morecore_area or the muslc*");
         ZF_LOGE("global variables to use malloc\n");
         assert(morecore_area != NULL || muslc_this_vspace != NULL);
@@ -186,7 +293,8 @@ long sys_brk(va_list ap)
    here to support that. We make a bunch of assumptions in the process */
 static long sys_mmap_impl_static(void *addr, size_t length, int prot, int flags, int fd, off_t offset)
 {
-    if (flags & MAP_ANONYMOUS) {
+    if (flags & MAP_ANONYMOUS)
+    {
         /* ensure the morecore region is initialized */
         init_morecore_region();
 
@@ -196,11 +304,12 @@ static long sys_mmap_impl_static(void *addr, size_t length, int prot, int flags,
 
         /* Steal from the top */
         uintptr_t base = morecore_top - adjusted_length;
-        if (base < morecore_base) {
+        if (base < morecore_base)
+        {
             return -ENOMEM;
         }
         morecore_top = base;
-        ZF_LOGF_IF((base % 0x1000) != 0, "return address: 0x%"PRIxPTR" requires alignment: 0x%x ", base, 0x1000);
+        ZF_LOGF_IF((base % 0x1000) != 0, "return address: 0x%" PRIxPTR " requires alignment: 0x%x ", base, 0x1000);
         return base;
     }
     assert(!"not implemented");
@@ -209,16 +318,18 @@ static long sys_mmap_impl_static(void *addr, size_t length, int prot, int flags,
 
 static long sys_mmap_impl_dynamic(void *addr, size_t length, int prot, int flags, int fd, off_t offset)
 {
-    if (!muslc_this_vspace) {
+    if (!muslc_this_vspace)
+    {
         ZF_LOGE("Need to assign vspace for mmap to work!\n");
         assert(muslc_this_vspace);
         return 0;
     }
-    if (flags & MAP_ANONYMOUS) {
+    if (flags & MAP_ANONYMOUS)
+    {
         /* determine how many pages we need */
         uint32_t pages = BYTES_TO_4K_PAGES(length);
         void *ret = vspace_new_pages(muslc_this_vspace, seL4_AllRights, pages, seL4_PageBits);
-        ZF_LOGF_IF((((uintptr_t)ret) % 0x1000) != 0, "return address: 0x%"PRIxPTR" requires alignment: 0x%x ", (uintptr_t)ret,
+        ZF_LOGF_IF((((uintptr_t)ret) % 0x1000) != 0, "return address: 0x%" PRIxPTR " requires alignment: 0x%x ", (uintptr_t)ret,
                    0x1000);
         return (long)ret;
     }
@@ -228,11 +339,16 @@ static long sys_mmap_impl_dynamic(void *addr, size_t length, int prot, int flags
 
 long sys_mmap_impl(void *addr, size_t length, int prot, int flags, int fd, off_t offset)
 {
-    if (morecore_area != NULL) {
+    if (morecore_area != NULL)
+    {
         return sys_mmap_impl_static(addr, length, prot, flags, fd, offset);
-    } else if (muslc_this_vspace != NULL) {
+    }
+    else if (muslc_this_vspace != NULL)
+    {
         return sys_mmap_impl_dynamic(addr, length, prot, flags, fd, offset);
-    } else {
+    }
+    else
+    {
         ZF_LOGE("mmap requires morecore_area or muslc* vars to be initialised\n");
         assert(morecore_area != NULL || muslc_this_vspace != NULL);
         return 0;
@@ -250,12 +366,13 @@ static long sys_mremap_dynamic(va_list ap)
 
     assert(flags == MREMAP_MAYMOVE);
     assert(IS_ALIGNED_4K(old_size));
-    assert(IS_ALIGNED_4K((uintptr_t) old_address));
+    assert(IS_ALIGNED_4K((uintptr_t)old_address));
     assert(IS_ALIGNED_4K(new_size));
     /* we currently only support remaping to size >= original */
     assert(new_size >= old_size);
 
-    if (flags & MREMAP_FIXED) {
+    if (flags & MREMAP_FIXED)
+    {
         new_address_arg = va_arg(ap, void *);
     }
 
@@ -264,7 +381,8 @@ static long sys_mremap_dynamic(va_list ap)
     seL4_CPtr caps[num_pages];
     uintptr_t cookies[num_pages];
     int i;
-    for (i = 0; i < num_pages; i++) {
+    for (i = 0; i < num_pages; i++)
+    {
         void *vaddr = old_address + i * BIT(seL4_PageBits);
         caps[i] = vspace_get_cap(muslc_this_vspace, vaddr);
         cookies[i] = vspace_get_cookie(muslc_this_vspace, vaddr);
@@ -277,13 +395,15 @@ static long sys_mremap_dynamic(va_list ap)
     int new_pages = new_size >> seL4_PageBits;
     reservation_t reservation = vspace_reserve_range(muslc_this_vspace, new_pages * PAGE_SIZE_4K, seL4_AllRights, 1,
                                                      &new_address);
-    if (!reservation.res) {
+    if (!reservation.res)
+    {
         ZF_LOGE("Failed to make reservation for remap\n");
         goto restore;
     }
     /* map all the existing pages into the reservation */
     error = vspace_map_pages_at_vaddr(muslc_this_vspace, caps, cookies, new_address, num_pages, seL4_PageBits, reservation);
-    if (error) {
+    if (error)
+    {
         ZF_LOGE("Mapping existing pages into new reservation failed\n");
         vspace_free_reservation(muslc_this_vspace, reservation);
         goto restore;
@@ -291,7 +411,8 @@ static long sys_mremap_dynamic(va_list ap)
     /* create any new pages */
     error = vspace_new_pages_at_vaddr(muslc_this_vspace, new_address + num_pages * PAGE_SIZE_4K, new_pages - num_pages,
                                       seL4_PageBits, reservation);
-    if (error) {
+    if (error)
+    {
         ZF_LOGE("Creating new pages for remap region failed\n");
         vspace_unmap_pages(muslc_this_vspace, new_address, num_pages, seL4_PageBits, VSPACE_PRESERVE);
         vspace_free_reservation(muslc_this_vspace, reservation);
@@ -318,11 +439,16 @@ static long sys_mremap_static(va_list ap)
 
 long sys_mremap(va_list ap)
 {
-    if (morecore_area != NULL) {
+    if (morecore_area != NULL)
+    {
         return sys_mremap_static(ap);
-    } else if (muslc_this_vspace != NULL) {
+    }
+    else if (muslc_this_vspace != NULL)
+    {
         return sys_mremap_dynamic(ap);
-    } else {
+    }
+    else
+    {
         ZF_LOGE("mrepmap requires morecore_area or muslc* vars to be initialised\n");
         assert(morecore_area != NULL || muslc_this_vspace != NULL);
         return 0;
@@ -364,7 +490,9 @@ long sys_mmap2(va_list ap)
 
 long sys_munmap(va_list ap)
 {
-    ZF_LOGE("%s is unsupported. This may have been called due to a "
-            "large malloc'd region being free'd.", __func__);
-    return 0;
+    void *addr = va_arg(ap, void *);
+    size_t length = va_arg(ap, size_t);
+
+    /* for now redirect to basic munmap */
+    return sys_munmap_impl(addr, length);
 }

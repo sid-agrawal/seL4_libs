@@ -63,6 +63,7 @@ enum sel4utils_reservation_type
     SEL4UTILS_RES_TYPE_STACK,
     SEL4UTILS_RES_TYPE_IPC_BUF,
     SEL4UTILS_RES_TYPE_HEAP,
+    SEL4UTILS_RES_TYPE_OSM_DATA,
     SEL4UTILS_RES_TYPE_DEVICE, ///< assume that any device region has been reserved as non-cacheable
     SEL4UTILS_RES_TYPE_SHARED_FRAMES,
     SEL4UTILS_RES_TYPE_GENERIC, ///< for any generic region, used for any purpose
@@ -85,6 +86,8 @@ static inline char * human_readable_va_res_type(sel4utils_reservation_type_t typ
         return "HEAP";
     case SEL4UTILS_RES_TYPE_DEVICE:
         return "DEVICE";
+    case SEL4UTILS_RES_TYPE_OSM_DATA:
+        return "OSM_DATA";
     case SEL4UTILS_RES_TYPE_SHARED_FRAMES:
         return "SHARED_FRAMES";
     case SEL4UTILS_RES_TYPE_GENERIC:

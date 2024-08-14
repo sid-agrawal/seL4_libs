@@ -80,9 +80,6 @@ struct env
     int num_regions;
     sel4utils_elf_region_t regions[MAX_REGIONS];
 
-    /* irq handler for test process */
-    seL4_CPtr irq_handler;
-
     /* endpoint for OSmosis IPC benchmarks */
     seL4_CPtr ipc_bench_ep;
 };

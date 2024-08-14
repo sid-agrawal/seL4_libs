@@ -26,7 +26,8 @@ typedef enum test_result {
 } test_result_t;
 
 /* Communication codes/requests between a server and a client */
-typedef enum _sel4test_communication_codes {
+typedef enum _sel4test_communication_codes
+{
     SEL4TEST_TIME_MIN = SEL4TEST_RESULT_FREE,
     /* Client: requests a timeout from the server
      * Server: Notify clients after the elapsed requested time.
@@ -45,6 +46,8 @@ typedef enum _sel4test_communication_codes {
 
     SEL4TEST_PROTOBUF_RPC = SEL4TEST_TIME_MAX,
     SEL4TEST_BENCH_IPC,
+
+    SEL4TEST_GET_IRQ_HANDLER,
 
     SEL4TEST_OUTPUT_MAX
 } sel4test_output_t;

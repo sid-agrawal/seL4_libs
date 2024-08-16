@@ -45,9 +45,9 @@ int sel4utils_arch_init_context_tls_base(seL4_UserContext *context, void *tls_ba
     return 0;
 }
 
-int sel4utils_arch_init_context_guest(uintptr_t kernel_pc, uintptr_t kernel_dtb, seL4_UserContext *context)
+int sel4utils_arch_init_context_guest(uintptr_t kernel_pc, seL4_Word arg0, seL4_UserContext *context)
 {
-    context->x0 = (seL4_Word)kernel_dtb;
+    context->x0 = arg0;
     context->spsr = 5; // PMODE_EL1h
     context->pc = (seL4_Word)kernel_pc;
 

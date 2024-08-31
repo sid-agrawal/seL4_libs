@@ -33,11 +33,6 @@
 
 #define MAX_REGIONS 4
 
-/* various time units in nanoseconds, for sleep requests */
-#define SECOND 1000000000UL
-
-#define MILLISECOND 1000000UL
-
 /* Contains information about the test environment for regular tests, bootstrap tests do
  * not use this environment */
 struct env
